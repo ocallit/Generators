@@ -1,0 +1,564 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shadow + Border Shadow (Tinted) Generator</title>
+
+  <style>
+    :root {
+      --bg-color: #f4f7f9;
+      --panel-bg: #ffffff;
+      --text-color: #333;
+      --primary-color: #007bff;
+      --border-color: #dee2e6;
+      --code-bg: #e9ecef;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      margin: 0;
+      padding: 1em;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    main {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 99vw;
+    }
+    h1, h2 {
+      color: var(--text-color);
+      border-bottom: 2px solid var(--border-color);
+      padding-bottom: 0.25rem;
+    }
+    h1 { color: var(--primary-color); }
+    h2 { margin-top: 0; font-weight: 600; }
+
+    .controls {
+      background-color: var(--panel-bg);
+      padding: 0.75rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      align-items: flex-start;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-width: 160px;
+      max-width: 240px;
+    }
+    .control-group label {
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: help;
+    }
+
+    .control-group input[type="text"],
+    .control-group input[type="number"],
+    .control-group input[type="color"],
+    .control-group select,
+    .control-group input[type="range"] {
+      width: 100%;
+      padding: 0.5rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 1rem;
+      box-sizing: border-box;
+    }
+    .control-group input[type="color"] { height: 40px; padding: 5px; }
+
+    .row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .row > * { flex: 1; }
+
+    .output-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .preview-container, .code-container {
+      background-color: var(--panel-bg);
+      padding: 0.75rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .preview-stage {
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 1rem;
+      min-height: 350px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, rgba(0,0,0,0.02), rgba(0,0,0,0.00));
+    }
+
+    #previewBox {
+      width: 320px;
+      height: 200px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,0.08);
+      background: #ffffff;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      user-select: none;
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    #copyButton {
+      padding: 0.5rem 1rem;
+      border: 1px solid var(--primary-color);
+      background-color: var(--primary-color);
+      color: white;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+    #copyButton:hover { background-color: #0056b3; }
+    #copyButton:active { transform: scale(0.98); }
+
+    pre {
+      background-color: var(--code-bg);
+      padding: 1rem;
+      border-radius: 4px;
+      border: 1px solid var(--border-color);
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin-top: 1rem;
+    }
+    code { font-family: "SF Mono", "Consolas", "Menlo", monospace; font-size: 0.95rem; }
+
+    .note {
+      font-size: 0.9rem;
+      color: #6c757d;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 8px;
+      border-left: 4px solid var(--primary-color);
+    }
+
+    @media (max-width: 900px) {
+      .output-container { grid-template-columns: 1fr; }
+    }
+  </style>
+
+  <style id="dynamic-styles"></style>
+</head>
+
+<body>
+<main>
+  <h1>Shadow + Border Shadow (Tinted) Generator</h1>
+
+  <section class="controls">
+    <div class="control-group">
+      <label for="preset" title="Quick starting points. You can fine-tune after selecting.">Preset</label>
+      <select id="preset">
+        <option value="custom" selected>custom</option>
+        <option value="soft">soft</option>
+        <option value="material">material-ish</option>
+        <option value="neon">neon ring</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="boxBg" title="Preview box background color.">Box BG</label>
+      <input type="color" id="boxBg" value="#ffffff" />
+    </div>
+
+    <div class="control-group">
+      <label for="boxRadius" title="Border-radius for the preview box.">Border Radius (px)</label>
+      <input type="number" id="boxRadius" value="14" min="0" max="80" step="1" />
+    </div>
+
+    <div class="control-group">
+      <label for="borderWidth" title="Border width for the preview box.">Border Width (px)</label>
+      <input type="number" id="borderWidth" value="1" min="0" max="20" step="1" />
+    </div>
+
+    <div class="control-group">
+      <label for="borderColor" title="Border color for the preview box.">Border Color</label>
+      <input type="color" id="borderColor" value="#dfe5ea" />
+    </div>
+
+    <div class="control-group">
+      <label for="inset" title="Inset shadow renders inside the box.">Inset?</label>
+      <select id="inset">
+        <option value="no" selected>no</option>
+        <option value="yes">yes</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label title="Shadow offset X/Y in pixels.">Offset (x / y)</label>
+      <div class="row">
+        <input type="number" id="offX" value="0" min="-200" max="200" step="1" title="x" />
+        <input type="number" id="offY" value="10" min="-200" max="200" step="1" title="y" />
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label title="Blur and spread in pixels. Spread expands/shrinks the shadow size.">Blur / Spread</label>
+      <div class="row">
+        <input type="number" id="blur" value="30" min="0" max="300" step="1" title="blur" />
+        <input type="number" id="spread" value="-10" min="-200" max="200" step="1" title="spread" />
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label for="shadowBaseColor" title="Base shadow color before tint blending.">Shadow Base</label>
+      <input type="color" id="shadowBaseColor" value="#000000" />
+    </div>
+
+    <div class="control-group">
+      <label for="shadowOpacity" title="Alpha for the final shadow (after tinting).">Shadow Opacity</label>
+      <input type="range" id="shadowOpacity" min="0" max="1" step="0.01" value="0.18" />
+      <input type="text" id="shadowOpacityText" value="0.18" />
+    </div>
+
+    <div class="control-group">
+      <label for="tintColor" title="Tint color to blend into the shadow (for colored / branded shadows).">Tint Color</label>
+      <input type="color" id="tintColor" value="#007bff" />
+    </div>
+
+    <div class="control-group">
+      <label for="tintStrength" title="0 = no tint, 1 = full tint.">Tint Strength</label>
+      <input type="range" id="tintStrength" min="0" max="1" step="0.01" value="0.25" />
+      <input type="text" id="tintStrengthText" value="0.25" />
+    </div>
+
+    <div class="control-group">
+      <label for="layer2" title="Adds a second shadow layer (often looks better).">Second Layer</label>
+      <select id="layer2">
+        <option value="off" selected>off</option>
+        <option value="on">on</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="layer2Scale" title="Multiplies offsets/blur/spread for the second layer.">Layer2 Scale</label>
+      <input type="number" id="layer2Scale" value="0.5" min="0.1" max="3" step="0.05" />
+    </div>
+
+    <div class="control-group">
+      <label for="ringOn" title="Border shadow ring (glow/outline) implemented as a zero-blur spread shadow.">Border Shadow Ring</label>
+      <select id="ringOn">
+        <option value="off" selected>off</option>
+        <option value="on">on</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="ringSize" title="Ring thickness (spread) in pixels.">Ring Size (px)</label>
+      <input type="number" id="ringSize" value="3" min="0" max="60" step="1" />
+    </div>
+
+    <div class="control-group">
+      <label for="ringColor" title="Ring color (also supports tinting via same tint controls if desired).">Ring Color</label>
+      <input type="color" id="ringColor" value="#007bff" />
+    </div>
+
+    <div class="control-group">
+      <label for="ringOpacity" title="Ring alpha.">Ring Opacity</label>
+      <input type="range" id="ringOpacity" min="0" max="1" step="0.01" value="0.22" />
+      <input type="text" id="ringOpacityText" value="0.22" />
+    </div>
+  </section>
+
+  <section class="output-container">
+    <div class="preview-container">
+      <h2>Live Preview</h2>
+      <div class="preview-stage">
+        <div id="previewBox" class="shadowed-box">Preview Box</div>
+      </div>
+    </div>
+
+    <div class="code-container">
+      <div class="code-header">
+        <h2>Your CSS</h2>
+        <button id="copyButton">Copy CSS</button>
+      </div>
+      <pre><code id="cssOutput"></code></pre>
+    </div>
+  </section>
+
+  <div class="note">
+    <strong>Tip:</strong> “Tint Strength” blends your shadow toward a brand color while keeping alpha control.
+    For a subtle modern look: keep opacity ~0.12–0.20 and tint strength ~0.10–0.35.
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const controls = {
+    preset: document.getElementById('preset'),
+
+    boxBg: document.getElementById('boxBg'),
+    boxRadius: document.getElementById('boxRadius'),
+    borderWidth: document.getElementById('borderWidth'),
+    borderColor: document.getElementById('borderColor'),
+
+    inset: document.getElementById('inset'),
+    offX: document.getElementById('offX'),
+    offY: document.getElementById('offY'),
+    blur: document.getElementById('blur'),
+    spread: document.getElementById('spread'),
+
+    shadowBaseColor: document.getElementById('shadowBaseColor'),
+    shadowOpacity: document.getElementById('shadowOpacity'),
+    shadowOpacityText: document.getElementById('shadowOpacityText'),
+
+    tintColor: document.getElementById('tintColor'),
+    tintStrength: document.getElementById('tintStrength'),
+    tintStrengthText: document.getElementById('tintStrengthText'),
+
+    layer2: document.getElementById('layer2'),
+    layer2Scale: document.getElementById('layer2Scale'),
+
+    ringOn: document.getElementById('ringOn'),
+    ringSize: document.getElementById('ringSize'),
+    ringColor: document.getElementById('ringColor'),
+    ringOpacity: document.getElementById('ringOpacity'),
+    ringOpacityText: document.getElementById('ringOpacityText'),
+  };
+
+  const dynamicStyles = document.getElementById('dynamic-styles');
+  const cssOutput = document.getElementById('cssOutput');
+  const copyButton = document.getElementById('copyButton');
+  const previewBox = document.getElementById('previewBox');
+
+  function clamp01(n) {
+    const x = Number(n);
+    if (Number.isNaN(x)) return 0;
+    return Math.max(0, Math.min(1, x));
+  }
+
+  function hexToRgb(hex) {
+    const h = (hex || '').trim().replace('#','');
+    if (h.length === 3) {
+      const r = parseInt(h[0] + h[0], 16);
+      const g = parseInt(h[1] + h[1], 16);
+      const b = parseInt(h[2] + h[2], 16);
+      return { r, g, b };
+    }
+    if (h.length === 6) {
+      const r = parseInt(h.slice(0,2), 16);
+      const g = parseInt(h.slice(2,4), 16);
+      const b = parseInt(h.slice(4,6), 16);
+      return { r, g, b };
+    }
+    return { r: 0, g: 0, b: 0 };
+  }
+
+  // Linear blend: base*(1-t) + tint*t
+  function mixRgb(baseHex, tintHex, t) {
+    const a = hexToRgb(baseHex);
+    const b = hexToRgb(tintHex);
+    const tt = clamp01(t);
+    const r = Math.round(a.r * (1 - tt) + b.r * tt);
+    const g = Math.round(a.g * (1 - tt) + b.g * tt);
+    const bb = Math.round(a.b * (1 - tt) + b.b * tt);
+    return { r, g, b: bb };
+  }
+
+  function rgbaStr(rgb, a) {
+    const aa = clamp01(a);
+    return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${aa})`;
+  }
+
+  function setPreset(name) {
+    // Minimal but useful presets (you can tweak after)
+    if (name === 'soft') {
+      controls.inset.value = 'no';
+      controls.offX.value = 0;
+      controls.offY.value = 10;
+      controls.blur.value = 30;
+      controls.spread.value = -10;
+      controls.shadowBaseColor.value = '#000000';
+      controls.shadowOpacity.value = 0.16;
+      controls.shadowOpacityText.value = '0.16';
+      controls.tintColor.value = '#007bff';
+      controls.tintStrength.value = 0.18;
+      controls.tintStrengthText.value = '0.18';
+      controls.layer2.value = 'on';
+      controls.layer2Scale.value = 0.45;
+      controls.ringOn.value = 'off';
+    } else if (name === 'material') {
+      controls.inset.value = 'no';
+      controls.offX.value = 0;
+      controls.offY.value = 14;
+      controls.blur.value = 38;
+      controls.spread.value = -18;
+      controls.shadowBaseColor.value = '#000000';
+      controls.shadowOpacity.value = 0.18;
+      controls.shadowOpacityText.value = '0.18';
+      controls.tintColor.value = '#0d6efd';
+      controls.tintStrength.value = 0.10;
+      controls.tintStrengthText.value = '0.10';
+      controls.layer2.value = 'on';
+      controls.layer2Scale.value = 0.35;
+      controls.ringOn.value = 'off';
+    } else if (name === 'neon') {
+      controls.inset.value = 'no';
+      controls.offX.value = 0;
+      controls.offY.value = 12;
+      controls.blur.value = 34;
+      controls.spread.value = -12;
+      controls.shadowBaseColor.value = '#000000';
+      controls.shadowOpacity.value = 0.14;
+      controls.shadowOpacityText.value = '0.14';
+      controls.tintColor.value = '#00b7ff';
+      controls.tintStrength.value = 0.55;
+      controls.tintStrengthText.value = '0.55';
+      controls.layer2.value = 'on';
+      controls.layer2Scale.value = 0.8;
+      controls.ringOn.value = 'on';
+      controls.ringSize.value = 4;
+      controls.ringColor.value = '#00b7ff';
+      controls.ringOpacity.value = 0.40;
+      controls.ringOpacityText.value = '0.40';
+    }
+  }
+
+  function syncRangeAndText(rangeEl, textEl) {
+    textEl.value = String(rangeEl.value);
+  }
+  function syncTextToRange(textEl, rangeEl) {
+    const v = clamp01(textEl.value);
+    rangeEl.value = String(v);
+    textEl.value = String(v);
+  }
+
+  function updateStyles() {
+    // Keep range/text in sync
+    syncRangeAndText(controls.shadowOpacity, controls.shadowOpacityText);
+    syncRangeAndText(controls.tintStrength, controls.tintStrengthText);
+    syncRangeAndText(controls.ringOpacity, controls.ringOpacityText);
+
+    const inset = (controls.inset.value === 'yes') ? 'inset ' : '';
+    const offX = Number(controls.offX.value) || 0;
+    const offY = Number(controls.offY.value) || 0;
+    const blur = Math.max(0, Number(controls.blur.value) || 0);
+    const spread = Number(controls.spread.value) || 0;
+
+    const shadowOpacity = clamp01(controls.shadowOpacity.value);
+    const tintStrength = clamp01(controls.tintStrength.value);
+
+    const baseShadowRgb = mixRgb(controls.shadowBaseColor.value, controls.tintColor.value, tintStrength);
+    const shadowColor = rgbaStr(baseShadowRgb, shadowOpacity);
+
+    // Layer 1 shadow
+    const layer1 = `${inset}${offX}px ${offY}px ${blur}px ${spread}px ${shadowColor}`;
+
+    // Optional Layer 2 shadow (scaled)
+    let shadows = [layer1];
+    if (controls.layer2.value === 'on') {
+      const s = Math.max(0.1, Number(controls.layer2Scale.value) || 0.5);
+      const l2x = Math.round(offX * s);
+      const l2y = Math.round(offY * s);
+      const l2b = Math.max(0, Math.round(blur * s));
+      const l2s = Math.round(spread * s);
+
+      // Make layer2 slightly more transparent for “ambient” feel
+      const l2Opacity = clamp01(shadowOpacity * 0.6);
+      const l2Color = rgbaStr(baseShadowRgb, l2Opacity);
+      shadows.push(`${inset}${l2x}px ${l2y}px ${l2b}px ${l2s}px ${l2Color}`);
+    }
+
+    // Optional border-shadow ring
+    if (controls.ringOn.value === 'on') {
+      const ringSize = Math.max(0, Number(controls.ringSize.value) || 0);
+      const ringOpacity = clamp01(controls.ringOpacity.value);
+      const ringRgb = mixRgb(controls.ringColor.value, controls.tintColor.value, tintStrength);
+      const ringColor = rgbaStr(ringRgb, ringOpacity);
+
+      // Ring technique: 0 blur, 0 offset, spread = ringSize
+      // Put it first so it sits closest to the box (before blurred shadows).
+      shadows.unshift(`0 0 0 ${ringSize}px ${ringColor}`);
+    }
+
+    const boxBg = controls.boxBg.value;
+    const radius = Math.max(0, Number(controls.boxRadius.value) || 0);
+    const borderW = Math.max(0, Number(controls.borderWidth.value) || 0);
+    const borderC = controls.borderColor.value;
+
+    const boxShadowValue = shadows.join(',\n    ');
+
+    const finalCss =
+`/* Generated CSS */
+.shadowed-box {
+  background: ${boxBg};
+  border-radius: ${radius}px;
+  border: ${borderW}px solid ${borderC};
+  box-shadow:
+    ${boxShadowValue};
+}`;
+
+    dynamicStyles.textContent = finalCss;
+    cssOutput.textContent = finalCss;
+
+    // Apply to preview (so it matches exactly)
+    previewBox.style.background = boxBg;
+    previewBox.style.borderRadius = radius + 'px';
+    previewBox.style.border = `${borderW}px solid ${borderC}`;
+    previewBox.style.boxShadow = shadows.join(', ');
+  }
+
+  // Events
+  Object.values(controls).forEach(el => {
+    el.addEventListener('input', () => {
+      if (el === controls.preset) {
+        if (controls.preset.value !== 'custom') setPreset(controls.preset.value);
+      }
+      updateStyles();
+    });
+    el.addEventListener('change', () => {
+      if (el === controls.preset) {
+        if (controls.preset.value !== 'custom') setPreset(controls.preset.value);
+      }
+      updateStyles();
+    });
+  });
+
+  // Allow typing exact alpha in text inputs
+  controls.shadowOpacityText.addEventListener('change', () => { syncTextToRange(controls.shadowOpacityText, controls.shadowOpacity); updateStyles(); });
+  controls.tintStrengthText.addEventListener('change', () => { syncTextToRange(controls.tintStrengthText, controls.tintStrength); updateStyles(); });
+  controls.ringOpacityText.addEventListener('change', () => { syncTextToRange(controls.ringOpacityText, controls.ringOpacity); updateStyles(); });
+
+  copyButton.addEventListener('click', () => {
+    navigator.clipboard.writeText(cssOutput.textContent).then(() => {
+      copyButton.textContent = 'Copied!';
+      setTimeout(() => { copyButton.textContent = 'Copy CSS'; }, 2000);
+    }).catch(err => console.error('Failed to copy:', err));
+  });
+
+  // Initial
+  updateStyles();
+});
+</script>
+</body>
+</html>

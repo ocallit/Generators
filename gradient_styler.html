@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Gradient Generator (Universal Support)</title>
+
+  <style>
+    :root{
+      --bg-color:#f4f7f9;
+      --panel-bg:#ffffff;
+      --text-color:#333;
+      --primary-color:#007bff;
+      --border-color:#dee2e6;
+      --code-bg:#e9ecef;
+      --danger:#b91c1c;
+      --ok:#065f46;
+    }
+
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      background:var(--bg-color);
+      color:var(--text-color);
+      margin:0;
+      padding:0.3em;
+    }
+
+    main{
+      width:100%;
+      max-width:100%;
+      display:grid;
+      grid-template-rows:auto auto auto auto; /* + debug */
+      gap:0.75rem;
+      align-items:start;
+    }
+
+    .panel{
+      background:var(--panel-bg);
+      padding:0.75rem;
+      border-radius:10px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+      box-sizing:border-box;
+      width:100%;
+    }
+
+    /* Row 1: toolbar */
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.75rem;
+      align-items:flex-end;
+    }
+
+    .toolbar h1{
+      margin:0;
+      color:var(--primary-color);
+      padding-bottom:0.25rem;
+      border-bottom:2px solid var(--border-color);
+      font-size:1.35rem;
+    }
+
+    .titleBlock{
+      display:flex;
+      flex-direction:column;
+      gap:0.25rem;
+      min-width: 320px;
+      flex: 1 1 520px;
+    }
+
+    .muted{
+      color:#6c757d;
+      font-weight:700;
+      font-size:0.9rem;
+    }
+
+    .control-group{
+      display:flex;
+      flex-direction:column;
+      gap:0.35rem;
+      min-width: 190px;
+      flex: 0 1 240px;
+    }
+
+    .control-group label{
+      font-weight:900;
+      white-space:nowrap;
+      cursor:help;
+    }
+
+    .control-group input[type="text"],
+    .control-group input[type="number"],
+    .control-group select,
+    .control-group input[list],
+    .control-group input[type="range"]{
+      width:100%;
+      padding:0.55rem;
+      border:1px solid var(--border-color);
+      border-radius:8px;
+      font-size:1rem;
+      box-sizing:border-box;
+      background:#fff;
+    }
+
+    .control-group .row{
+      display:flex;
+      gap:0.5rem;
+      align-items:center;
+    }
+    .control-group .row > *{ flex:1; }
+
+    .btnRow{
+      display:flex;
+      gap:0.5rem;
+      align-items:flex-end;
+      flex: 0 0 auto;
+    }
+
+    .btn{
+      padding:0.6rem 1rem;
+      border:1px solid var(--primary-color);
+      background:var(--primary-color);
+      color:#fff;
+      border-radius:8px;
+      cursor:pointer;
+      transition:background-color 0.2s, transform 0.1s;
+      font-weight:900;
+      letter-spacing:0.2px;
+      user-select:none;
+      white-space:nowrap;
+    }
+    .btn:hover{ background:#0056b3; }
+    .btn:active{ transform:scale(0.98); }
+
+    .btnSecondary{
+      border-color:#6b7280;
+      background:#6b7280;
+    }
+    .btnSecondary:hover{ background:#4b5563; }
+
+    /* Stops flex row */
+    .stopsWrap{
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.5rem;
+      align-items:flex-start;
+      padding:0.5rem;
+      border:1px dashed var(--border-color);
+      border-radius:10px;
+      width:100%;
+      box-sizing:border-box;
+      margin-top:0.25rem;
+    }
+
+    .stopCard{
+      border:1px solid var(--border-color);
+      border-radius:10px;
+      padding:0.55rem;
+      background:#fff;
+      flex: 1 1 260px;
+      min-width:260px;
+      max-width:520px;
+      box-sizing:border-box;
+      box-shadow:0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .stopHeader{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:10px;
+    }
+
+    .stopEnable{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:900;
+      user-select:none;
+      color:#334155;
+      white-space:nowrap;
+    }
+
+    .stopHeader input[type="color"]{
+      width:64px;
+      height:40px;
+      padding:5px;
+      border:1px solid var(--border-color);
+      border-radius:8px;
+      background:#fff;
+      box-sizing:border-box;
+    }
+
+    .stopBody{ display:flex; flex-direction:column; gap:8px; }
+
+    .stopRow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .stopRow input[type="range"]{ flex: 1 1 170px; }
+    .stopRow input[type="number"]{
+      width:92px;
+      padding:0.55rem;
+      border:1px solid var(--border-color);
+      border-radius:8px;
+      font-size:1rem;
+      box-sizing:border-box;
+    }
+
+    .stopCard[aria-disabled="true"]{ opacity:0.45; }
+
+    /* Row 2: preview */
+    .preview-stage{
+      border:1px solid var(--border-color);
+      border-radius:10px;
+      overflow:hidden;
+    }
+
+    #previewGradient{
+      width:100%;
+      height:380px;
+      position:relative;
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      padding:16px;
+      box-sizing:border-box;
+      color:#fff;
+      background: linear-gradient(135deg, #0d6efd 0%, #f15c27 50%, #10b981 100%);
+    }
+
+    .preview-left{
+      display:flex;
+      flex-direction:column;
+      gap:8px;
+      max-width:78%;
+    }
+
+    .preview-title{
+      font-weight:900;
+      letter-spacing:0.2px;
+      text-shadow:0 2px 10px rgba(0,0,0,0.20);
+      font-size:1.05rem;
+    }
+
+    .preview-badges{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .badge{
+      background:rgba(255,255,255,0.16);
+      border:1px solid rgba(255,255,255,0.22);
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:800;
+      font-size:0.85rem;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      white-space:nowrap;
+    }
+
+    /* Row 3: CSS */
+    pre{
+      background:var(--code-bg);
+      padding:1rem;
+      border-radius:10px;
+      border:1px solid var(--border-color);
+      white-space:pre-wrap;
+      word-wrap:break-word;
+      margin:0.75rem 0 0 0;
+      overflow:auto;
+    }
+    code{ font-family:"SF Mono","Consolas","Menlo",monospace; font-size:0.95rem; }
+
+    /* Debug row */
+    #debugBox{
+      font-family:"SF Mono","Consolas","Menlo",monospace;
+      font-size:0.9rem;
+      line-height:1.35;
+      color:#0f172a;
+      white-space:pre-wrap;
+      word-break:break-word;
+    }
+    .dbgOk{ color: var(--ok); font-weight:900; }
+    .dbgErr{ color: var(--danger); font-weight:900; }
+  </style>
+
+  <style id="dynamic-styles"></style>
+</head>
+
+<body>
+<main style="margin:0;padding:0">
+        <div class="titleBlock" style="margin:0;padding:0">
+        <h1 style="margin:0;padding:0">Gradient Generator</h1>
+              <div class="btnRow">
+				<button type="button" class="btn btnSecondary" id="generateButton">Generate</button>
+				<button type="button" class="btn" id="copyButton">Copy CSS</button>
+				      <div class="control-group">
+						<label for="cssTarget" title="Selector used in output CSS.">CSS Selector</label>
+						<input type="text" id="cssTarget" value=".gradient-bg" />
+					</div>
+					
+					      <div class="control-group">
+        <label for="macro" title="Selecting a macro auto-generates immediately.">Preset</label>
+        <select id="macro"></select>
+      </div>
+			</div>
+      </div>
+  <!-- ROW 1: TOP TOOLBAR (Generate/Copy + Controls + Stops) -->
+  <section class="panel">
+
+    <div class="toolbar">
+
+
+
+
+
+
+
+
+      <div class="control-group">
+        <label for="type">Type</label>
+        <select id="type">
+          <option value="linear" selected>linear-gradient</option>
+          <option value="radial">radial-gradient</option>
+          <option value="conic">conic-gradient</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="repeat">Repeat</label>
+        <select id="repeat">
+          <option value="no" selected>no</option>
+          <option value="yes">yes</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="angle" title="Linear angle or conic “from” angle.">Angle</label>
+        <input type="number" id="angle" value="135" min="0" max="360" step="1" />
+      </div>
+
+      <!-- datalists -->
+      <div class="control-group">
+        <label for="radialShapeSize">Radial Shape/Size</label>
+        <input type="text" id="radialShapeSize" list="dlRadialShapeSize" value="circle farthest-corner" />
+        <datalist id="dlRadialShapeSize">
+          <option value="circle closest-side"></option>
+          <option value="circle farthest-side"></option>
+          <option value="circle closest-corner"></option>
+          <option value="circle farthest-corner"></option>
+          <option value="ellipse closest-side"></option>
+          <option value="ellipse farthest-side"></option>
+          <option value="ellipse closest-corner"></option>
+          <option value="ellipse farthest-corner"></option>
+        </datalist>
+      </div>
+
+      <datalist id="dlPositions">
+        <option value="at center"></option>
+        <option value="at top"></option>
+        <option value="at bottom"></option>
+        <option value="at left"></option>
+        <option value="at right"></option>
+        <option value="at top left"></option>
+        <option value="at top right"></option>
+        <option value="at bottom left"></option>
+        <option value="at bottom right"></option>
+        <option value="at 50% 50%"></option>
+        <option value="at 30% 20%"></option>
+        <option value="at 70% 30%"></option>
+        <option value="at 20% 80%"></option>
+        <option value="at 80% 20%"></option>
+      </datalist>
+
+      <div class="control-group">
+        <label for="radialPos">Radial Position</label>
+        <input type="text" id="radialPos" list="dlPositions" value="at 30% 20%" />
+      </div>
+
+      <div class="control-group">
+        <label for="conicPos">Conic Center</label>
+        <input type="text" id="conicPos" list="dlPositions" value="at center" />
+      </div>
+
+      <div class="control-group">
+        <label for="layerMode">Layer Mode</label>
+        <select id="layerMode">
+          <option value="off" selected>off</option>
+          <option value="two">2-layer (highlight + main)</option>
+          <option value="cinematic">Cinematic 3-layer (highlight + main + vignette)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label>Highlight</label>
+        <div class="row">
+          <input type="range" id="highlightStrength" min="0" max="0.9" step="0.01" value="0.28" />
+          <input type="number" id="highlightStrengthN" min="0" max="0.9" step="0.01" value="0.28" />
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>Vignette</label>
+        <div class="row">
+          <input type="range" id="vignetteStrength" min="0" max="0.8" step="0.01" value="0.18" />
+          <input type="number" id="vignetteStrengthN" min="0" max="0.8" step="0.01" value="0.18" />
+        </div>
+      </div>
+
+      <div style="flex:1 1 100%; min-width: 100%;">
+        <div class="muted" style="margin:0.25rem 0 0.4rem 0;">
+          Stops (enable any; min 2). Selecting a macro auto-generates; for manual tweaks click <b>Generate</b>.
+        </div>
+        <div class="stopsWrap" id="stopsBox"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROW 2: FULL-WIDTH SAMPLE GRADIENT -->
+  <section class="panel">
+    <div class="preview-stage">
+      <div id="previewGradient">
+        <div class="preview-left">
+          <div class="preview-title" id="previewTitle">Incredible Gradient</div>
+          <div class="preview-badges">
+            <span class="badge" id="badgeType">linear</span>
+            <span class="badge" id="badgeAngle">135deg</span>
+            <span class="badge" id="badgeStops">4 stops</span>
+            <span class="badge" id="badgeLayers">layers: off</span>
+          </div>
+        </div>
+        <div class="badge" id="badgeRepeat">repeat: no</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROW 3: CSS OUTPUT -->
+  <section class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; flex-wrap:wrap;">
+      <h2 style="margin:0; padding-bottom:0.25rem; border-bottom:2px solid var(--border-color);">Generated CSS</h2>
+      <div class="muted">Generated on <b>Generate</b> and when selecting a macro.</div>
+    </div>
+    <pre><code id="cssOutput"></code></pre>
+  </section>
+
+  <!-- ROW 4: DEBUG -->
+  <section class="panel">
+    <div style="display:flex; justify-content:space-between; align-items:flex-end; gap:1rem; flex-wrap:wrap;">
+      <h2 style="margin:0; padding-bottom:0.25rem; border-bottom:2px solid var(--border-color);">Debug</h2>
+      <div class="muted">If the preview doesn’t change, this shows why.</div>
+    </div>
+    <div id="debugBox"></div>
+  </section>
+
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const dbgEl = document.getElementById('debugBox');
+  function dbgLine(msg, kind){
+    const p = document.createElement('div');
+    if (kind === 'ok') p.className = 'dbgOk';
+    if (kind === 'err') p.className = 'dbgErr';
+    p.textContent = msg;
+    dbgEl.prepend(p);
+    console.log(msg);
+  }
+
+  window.addEventListener('error', (ev) => {
+    dbgLine(`[ERROR] ${ev.message} @ ${ev.filename}:${ev.lineno}:${ev.colno}`, 'err');
+  });
+  window.addEventListener('unhandledrejection', (ev) => {
+    dbgLine(`[PROMISE ERROR] ${String(ev.reason)}`, 'err');
+  });
+
+  dbgLine('[INIT] DOMContentLoaded fired', 'ok');
+
+  const ui = {
+    macro: document.getElementById('macro'),
+    type: document.getElementById('type'),
+    angle: document.getElementById('angle'),
+    repeat: document.getElementById('repeat'),
+
+    radialShapeSize: document.getElementById('radialShapeSize'),
+    radialPos: document.getElementById('radialPos'),
+    conicPos: document.getElementById('conicPos'),
+
+    layerMode: document.getElementById('layerMode'),
+    highlightStrength: document.getElementById('highlightStrength'),
+    highlightStrengthN: document.getElementById('highlightStrengthN'),
+    vignetteStrength: document.getElementById('vignetteStrength'),
+    vignetteStrengthN: document.getElementById('vignetteStrengthN'),
+
+    cssTarget: document.getElementById('cssTarget'),
+    stopsBox: document.getElementById('stopsBox'),
+
+    generateButton: document.getElementById('generateButton'),
+    copyButton: document.getElementById('copyButton'),
+  };
+
+  const dynamicStyles = document.getElementById('dynamic-styles');
+  const cssOutput = document.getElementById('cssOutput');
+
+  const previewGradient = document.getElementById('previewGradient');
+  const previewTitle = document.getElementById('previewTitle');
+
+  const badgeType = document.getElementById('badgeType');
+  const badgeAngle = document.getElementById('badgeAngle');
+  const badgeStops = document.getElementById('badgeStops');
+  const badgeLayers = document.getElementById('badgeLayers');
+  const badgeRepeat = document.getElementById('badgeRepeat');
+
+  for (const [k,v] of Object.entries(ui)){
+    if (!v) dbgLine(`[INIT] Missing element: ui.${k} is null`, 'err');
+  }
+  if (!previewGradient) dbgLine('[INIT] Missing #previewGradient', 'err');
+
+  function clampNum(n, min, max){
+    const x = Number(n);
+    if (Number.isNaN(x)) return min;
+    return Math.max(min, Math.min(max, x));
+  }
+  function clampInt(n, min, max){
+    const x = Number(n);
+    if (Number.isNaN(x)) return min;
+    return Math.max(min, Math.min(max, Math.round(x)));
+  }
+
+  function syncRangeNumber(rangeEl, numEl, min, max){
+    const v = clampNum(rangeEl.value, min, max);
+    numEl.value = String(v);
+    rangeEl.value = String(v);
+    return v;
+  }
+  function syncNumberRange(numEl, rangeEl, min, max){
+    const v = clampNum(numEl.value, min, max);
+    rangeEl.value = String(v);
+    numEl.value = String(v);
+    return v;
+  }
+
+  function gradientFnName(type, repeating){
+    const rep = (repeating === 'yes') ? 'repeating-' : '';
+    if (type === 'linear') return rep + 'linear-gradient';
+    if (type === 'radial') return rep + 'radial-gradient';
+    return rep + 'conic-gradient';
+  }
+
+  // UNIVERSAL (no "in oklab/oklch", no experimental tokens)
+  function buildGradient(type, repeating, angleDeg, radialShapeSize, radialPos, conicPos, stops){
+    const fn = gradientFnName(type, repeating);
+    const stopStr = stops.map(s => `${s.color} ${s.pos}%`).join(', ');
+
+    if (type === 'linear'){
+      return `${fn}(${angleDeg}deg, ${stopStr})`;
+    }
+    if (type === 'radial'){
+      const shapeSize = (radialShapeSize || '').trim();
+      const pos = (radialPos || 'at center').trim();
+      const head = [shapeSize, pos].filter(Boolean).join(' ');
+      return head ? `${fn}(${head}, ${stopStr})` : `${fn}(${stopStr})`;
+    }
+
+    const cPos = (conicPos || 'at center').trim();
+    return `${fn}(from ${angleDeg}deg ${cPos}, ${stopStr})`;
+  }
+
+  function buildHighlightLayer(type, strength){
+    const a = clampNum(strength, 0, 1);
+    if (type === 'linear'){
+      return `linear-gradient(135deg,
+        rgba(255,255,255,${(a*1.10).toFixed(3)}) 0%,
+        rgba(255,255,255,0.00) 42%,
+        rgba(0,0,0,${(a*0.45).toFixed(3)}) 100%)`;
+    }
+    return `radial-gradient(at 20% 15%,
+      rgba(255,255,255,${(a*1.15).toFixed(3)}) 0%,
+      rgba(255,255,255,0.00) 55%,
+      rgba(0,0,0,${(a*0.50).toFixed(3)}) 100%)`;
+  }
+
+  function buildVignetteLayer(strength){
+    const v = clampNum(strength, 0, 1);
+    return `radial-gradient(circle farthest-corner at 50% 45%,
+      rgba(0,0,0,0.00) 0%,
+      rgba(0,0,0,0.00) 55%,
+      rgba(0,0,0,${(v*0.55).toFixed(3)}) 100%)`;
+  }
+
+  function updateLayerUI(){
+    const mode = ui.layerMode.value;
+
+    const hsDisabled = (mode === 'off');
+    ui.highlightStrength.disabled = hsDisabled;
+    ui.highlightStrengthN.disabled = hsDisabled;
+
+    const vsDisabled = (mode !== 'cinematic');
+    ui.vignetteStrength.disabled = vsDisabled;
+    ui.vignetteStrengthN.disabled = vsDisabled;
+  }
+
+  /* Stops model (8) */
+  const stopState = Array.from({ length: 8 }, (_, i) => ({
+    enabled: i < 4,
+    color: ['#0d6efd','#f15c27','#7c3aed','#10b981','#ff2d95','#22c1c3','#fbbf24','#111827'][i] || '#000000',
+    pos: [0,35,70,100,45,60,85,100][i] ?? (i * 12),
+  }));
+
+  function getEnabledStops(){
+    const enabled = stopState
+      .filter(s => s.enabled)
+      .map(s => ({ color: s.color, pos: clampInt(s.pos, 0, 100) }))
+      .sort((a,b) => a.pos - b.pos);
+
+    // enforce non-decreasing positions
+    for (let i = 1; i < enabled.length; i++){
+      if (enabled[i].pos < enabled[i-1].pos) enabled[i].pos = enabled[i-1].pos;
+    }
+    return enabled;
+  }
+
+  function renderStopsUI(){
+    ui.stopsBox.innerHTML = '';
+
+    for (let i = 0; i < 8; i++){
+      const card = document.createElement('div');
+      card.className = 'stopCard';
+      card.dataset.index = String(i);
+
+      const head = document.createElement('div');
+      head.className = 'stopHeader';
+
+      const enableLabel = document.createElement('label');
+      enableLabel.className = 'stopEnable';
+      enableLabel.title = 'Enable/disable this stop';
+
+      const chk = document.createElement('input');
+      chk.type = 'checkbox';
+      chk.checked = !!stopState[i].enabled;
+
+      const t = document.createElement('span');
+      t.textContent = `Stop ${i+1}`;
+
+      enableLabel.appendChild(chk);
+      enableLabel.appendChild(t);
+
+      const col = document.createElement('input');
+      col.type = 'color';
+      col.value = stopState[i].color;
+      col.title = `Color ${i+1}`;
+
+      head.appendChild(enableLabel);
+      head.appendChild(col);
+
+      const body = document.createElement('div');
+      body.className = 'stopBody';
+
+      const row = document.createElement('div');
+      row.className = 'stopRow';
+
+      const range = document.createElement('input');
+      range.type = 'range';
+      range.min = '0';
+      range.max = '100';
+      range.step = '1';
+      range.value = String(clampInt(stopState[i].pos, 0, 100));
+      range.title = `Position ${i+1}`;
+
+      const num = document.createElement('input');
+      num.type = 'number';
+      num.min = '0';
+      num.max = '100';
+      num.step = '1';
+      num.value = String(clampInt(stopState[i].pos, 0, 100));
+      num.title = `Position ${i+1} (%)`;
+
+      row.appendChild(range);
+      row.appendChild(num);
+      body.appendChild(row);
+
+      function setDisabledUI(){
+        const disabled = !stopState[i].enabled;
+        card.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+        col.disabled = disabled;
+        range.disabled = disabled;
+        num.disabled = disabled;
+      }
+
+      chk.addEventListener('change', () => {
+        stopState[i].enabled = chk.checked;
+
+        const enabledCount = stopState.filter(s => s.enabled).length;
+        if (enabledCount < 2){
+          stopState[i].enabled = true;
+          chk.checked = true;
+        }
+        setDisabledUI();
+        dbgLine(`[STOP ${i+1}] enabled=${stopState[i].enabled}`, 'ok');
+      });
+
+      col.addEventListener('input', () => {
+        stopState[i].color = col.value;
+        dbgLine(`[STOP ${i+1}] color=${stopState[i].color}`, 'ok');
+      });
+
+      range.addEventListener('input', () => {
+        const v = clampInt(range.value, 0, 100);
+        stopState[i].pos = v;
+        num.value = String(v);
+        dbgLine(`[STOP ${i+1}] pos=${stopState[i].pos}`, 'ok');
+      });
+
+      num.addEventListener('input', () => {
+        const v = clampInt(num.value, 0, 100);
+        stopState[i].pos = v;
+        range.value = String(v);
+        dbgLine(`[STOP ${i+1}] pos=${stopState[i].pos}`, 'ok');
+      });
+
+      card.appendChild(head);
+      card.appendChild(body);
+      ui.stopsBox.appendChild(card);
+
+      setDisabledUI();
+    }
+  }
+
+  // 9 macros (no color-space fields)
+  const MACROS = [
+    {
+      id:'custom', name:'custom (edit freely)', title:'Custom Gradient',
+      type:'linear', repeat:'no',
+      angle:135, radialShapeSize:'circle farthest-corner', radialPos:'at 30% 20%', conicPos:'at center',
+      layerMode:'off', h:0.28, v:0.18,
+      stops:[
+        {en:1,c:'#0d6efd',p:0},{en:1,c:'#f15c27',p:35},{en:1,c:'#7c3aed',p:70},{en:1,c:'#10b981',p:100},
+        {en:0,c:'#ff2d95',p:48},{en:0,c:'#22c1c3',p:62},{en:0,c:'#fbbf24',p:86},{en:0,c:'#111827',p:100},
+      ]
+    },
+    {
+      id:'auroraSilk', name:'Aurora Silk', title:'Aurora Silk',
+      type:'radial', repeat:'no',
+      angle:0, radialShapeSize:'circle farthest-corner', radialPos:'at 20% 15%', conicPos:'at center',
+      layerMode:'cinematic', h:0.32, v:0.22,
+      stops:[
+        {en:1,c:'#22c1c3',p:0},{en:1,c:'#7c3aed',p:28},{en:1,c:'#ff2d95',p:55},{en:1,c:'#0ea5e9',p:75},
+        {en:1,c:'#10b981',p:88},{en:1,c:'#fbbf24',p:96},{en:0,c:'#111827',p:100},{en:0,c:'#ffffff',p:100},
+      ]
+    },
+    {
+      id:'sunsetEmber', name:'Sunset Ember', title:'Sunset Ember',
+      type:'linear', repeat:'no',
+      angle:120, radialShapeSize:'', radialPos:'at center', conicPos:'at center',
+      layerMode:'cinematic', h:0.30, v:0.20,
+      stops:[
+        {en:1,c:'#ff7a18',p:0},{en:1,c:'#ff3d77',p:24},{en:1,c:'#7c3aed',p:52},{en:1,c:'#0d6efd',p:78},
+        {en:1,c:'#0ea5e9',p:90},{en:1,c:'#22c1c3',p:100},{en:0,c:'#111827',p:100},{en:0,c:'#ffffff',p:100},
+      ]
+    },
+    {
+      id:'deepOceanGlass', name:'Deep Ocean Glass', title:'Deep Ocean Glass',
+      type:'linear', repeat:'no',
+      angle:145, radialShapeSize:'', radialPos:'at center', conicPos:'at center',
+      layerMode:'cinematic', h:0.28, v:0.24,
+      stops:[
+        {en:1,c:'#0ea5e9',p:0},{en:1,c:'#0b2a6f',p:34},{en:1,c:'#001a3a',p:55},{en:1,c:'#00ffd5',p:76},
+        {en:1,c:'#10b981',p:92},{en:0,c:'#ffffff',p:100},{en:0,c:'#111827',p:100},{en:0,c:'#ff2d95',p:100},
+      ]
+    },
+    {
+      id:'candyNebula', name:'Candy Nebula', title:'Candy Nebula',
+      type:'conic', repeat:'no',
+      angle:210, radialShapeSize:'', radialPos:'at center', conicPos:'at center',
+      layerMode:'cinematic', h:0.26, v:0.18,
+      stops:[
+        {en:1,c:'#ff2d95',p:0},{en:1,c:'#7c3aed',p:18},{en:1,c:'#0ea5e9',p:40},{en:1,c:'#22c1c3',p:60},
+        {en:1,c:'#10b981',p:76},{en:1,c:'#fbbf24',p:92},{en:1,c:'#ff7a18',p:100},{en:0,c:'#111827',p:100},
+      ]
+    },
+    {
+      id:'mintSorbet', name:'Mint Sorbet', title:'Mint Sorbet',
+      type:'linear', repeat:'no',
+      angle:135, radialShapeSize:'', radialPos:'at center', conicPos:'at center',
+      layerMode:'two', h:0.24, v:0.18,
+      stops:[
+        {en:1,c:'#10b981',p:0},{en:1,c:'#22c1c3',p:35},{en:1,c:'#a7f3d0',p:70},{en:1,c:'#e0f2fe',p:100},
+        {en:0,c:'#0ea5e9',p:100},{en:0,c:'#ffffff',p:100},{en:0,c:'#111827',p:100},{en:0,c:'#ff2d95',p:100},
+      ]
+    },
+    {
+      id:'royalVelvet', name:'Royal Velvet', title:'Royal Velvet',
+      type:'radial', repeat:'no',
+      angle:0, radialShapeSize:'circle farthest-corner', radialPos:'at 60% 35%', conicPos:'at center',
+      layerMode:'cinematic', h:0.30, v:0.28,
+      stops:[
+        {en:1,c:'#7c3aed',p:0},{en:1,c:'#1d4ed8',p:30},{en:1,c:'#0b1024',p:62},{en:1,c:'#050816',p:100},
+        {en:0,c:'#ff2d95',p:100},{en:0,c:'#22c1c3',p:100},{en:0,c:'#fbbf24',p:100},{en:0,c:'#ffffff',p:100},
+      ]
+    },
+    {
+      id:'lavaChrome', name:'Lava Chrome', title:'Lava Chrome',
+      type:'linear', repeat:'no',
+      angle:100, radialShapeSize:'', radialPos:'at center', conicPos:'at center',
+      layerMode:'cinematic', h:0.28, v:0.22,
+      stops:[
+        {en:1,c:'#f15c27',p:0},{en:1,c:'#ffb703',p:22},{en:1,c:'#111827',p:52},{en:1,c:'#60a5fa',p:72},
+        {en:1,c:'#22c1c3',p:86},{en:1,c:'#10b981',p:100},{en:0,c:'#ff2d95',p:100},{en:0,c:'#ffffff',p:100},
+      ]
+    },
+    {
+      id:'iceFire', name:'Ice + Fire', title:'Ice + Fire',
+      type:'linear', repeat:'no',
+      angle:90, radialShapeSize:'', radialPos:'at center', conicPos:'at center',
+      layerMode:'two', h:0.22, v:0.18,
+      stops:[
+        {en:1,c:'#00d4ff',p:0},{en:1,c:'#0d6efd',p:28},{en:1,c:'#7c3aed',p:52},{en:1,c:'#ff2d95',p:72},
+        {en:1,c:'#ff7a18',p:90},{en:1,c:'#ffb703',p:100},{en:0,c:'#111827',p:100},{en:0,c:'#ffffff',p:100},
+      ]
+    },
+  ];
+
+  function fillMacroSelect(){
+    ui.macro.innerHTML = '';
+    for (const m of MACROS){
+      const opt = document.createElement('option');
+      opt.value = m.id;
+      opt.textContent = m.name;
+      ui.macro.appendChild(opt);
+    }
+    ui.macro.value = 'custom';
+  }
+
+  function applyMacro(id){
+    const m = MACROS.find(x => x.id === id) || MACROS[0];
+
+    ui.type.value = m.type;
+    ui.repeat.value = m.repeat;
+    ui.angle.value = String(m.angle);
+
+    ui.radialShapeSize.value = m.radialShapeSize || '';
+    ui.radialPos.value = m.radialPos || 'at center';
+    ui.conicPos.value = m.conicPos || 'at center';
+
+    ui.layerMode.value = m.layerMode || 'off';
+    ui.highlightStrength.value = String(m.h ?? 0.28);
+    ui.highlightStrengthN.value = String(m.h ?? 0.28);
+    ui.vignetteStrength.value = String(m.v ?? 0.18);
+    ui.vignetteStrengthN.value = String(m.v ?? 0.18);
+
+    for (let i = 0; i < 8; i++){
+      stopState[i].enabled = !!m.stops[i].en;
+      stopState[i].color = m.stops[i].c;
+      stopState[i].pos = clampInt(m.stops[i].p, 0, 100);
+    }
+
+    previewTitle.textContent = m.title;
+    renderStopsUI();
+    updateLayerUI();
+
+    dbgLine(`[MACRO] applied="${m.name}"`, 'ok');
+  }
+
+  function generate(reason){
+    try{
+      updateLayerUI();
+
+      const type = ui.type.value;
+      const angle = clampInt(ui.angle.value, 0, 360);
+      const repeating = ui.repeat.value;
+
+      const radialShapeSize = ui.radialShapeSize.value;
+      const radialPos = ui.radialPos.value;
+      const conicPos = ui.conicPos.value;
+
+      const mode = ui.layerMode.value;
+
+      const hs = syncRangeNumber(ui.highlightStrength, ui.highlightStrengthN, 0, 0.9);
+      const vs = syncRangeNumber(ui.vignetteStrength, ui.vignetteStrengthN, 0, 0.8);
+
+      const stops = getEnabledStops();
+
+      const main = buildGradient(type, repeating, angle, radialShapeSize, radialPos, conicPos, stops);
+
+      let backgroundValue = main;
+      if (mode === 'two'){
+        const hi = buildHighlightLayer(type, hs);
+        backgroundValue = `${hi}, ${main}`;
+      } else if (mode === 'cinematic'){
+        const hi = buildHighlightLayer(type, hs);
+        const vig = buildVignetteLayer(vs);
+        backgroundValue = `${hi}, ${main}, ${vig}`;
+      }
+
+      const selector = (ui.cssTarget.value || '.gradient-bg').trim();
+      const css =
+`/* Generated CSS */
+${selector} {
+  background-image: ${backgroundValue};
+}`;
+
+      dynamicStyles.textContent = `${selector} { background-image: ${backgroundValue}; }`;
+      cssOutput.textContent = css;
+
+      // Apply to preview
+      previewGradient.style.backgroundImage = backgroundValue;
+      previewGradient.style.background = backgroundValue;
+
+      // Force a computed-style check (if rejected, computed background-image stays as "none" or unchanged)
+      const applied = getComputedStyle(previewGradient).backgroundImage;
+      console.log('[GENERATE] backgroundValue=', backgroundValue);
+      console.log('[GENERATE] computed background-image=', applied);
+
+      badgeType.textContent = type;
+      badgeAngle.textContent = (type === 'linear' || type === 'conic') ? `${angle}deg` : '—';
+      badgeStops.textContent = `${stops.length} stop${stops.length === 1 ? '' : 's'}`;
+      badgeLayers.textContent = `layers: ${mode}`;
+      badgeRepeat.textContent = `repeat: ${repeating}`;
+
+      dbgLine(`[GENERATE] ok reason=${reason || 'button'} type=${type} stops=${stops.length}`, 'ok');
+      if (!applied || applied === 'none'){
+        dbgLine('[APPLY WARNING] Browser rejected background-image (computed is "none"). Check gradient parameters.', 'err');
+      }
+    } catch (e){
+      dbgLine(`[GENERATE ERROR] ${String(e)}`, 'err');
+      console.error(e);
+    }
+  }
+
+  // Wiring
+  ui.generateButton.addEventListener('click', () => generate('button'));
+
+  ui.copyButton.addEventListener('click', () => {
+    navigator.clipboard.writeText(cssOutput.textContent).then(() => {
+      const old = ui.copyButton.textContent;
+      ui.copyButton.textContent = 'Copied!';
+      setTimeout(() => ui.copyButton.textContent = old, 1200);
+      dbgLine('[COPY] CSS copied', 'ok');
+    }).catch(err => {
+      dbgLine(`[COPY ERROR] ${String(err)}`, 'err');
+      console.error(err);
+    });
+  });
+
+  ui.macro.addEventListener('change', () => {
+    applyMacro(ui.macro.value);
+    generate('macro');
+  });
+
+  ui.highlightStrength.addEventListener('input', () => syncRangeNumber(ui.highlightStrength, ui.highlightStrengthN, 0, 0.9));
+  ui.highlightStrengthN.addEventListener('input', () => syncNumberRange(ui.highlightStrengthN, ui.highlightStrength, 0, 0.9));
+
+  ui.vignetteStrength.addEventListener('input', () => syncRangeNumber(ui.vignetteStrength, ui.vignetteStrengthN, 0, 0.8));
+  ui.vignetteStrengthN.addEventListener('input', () => syncNumberRange(ui.vignetteStrengthN, ui.vignetteStrength, 0, 0.8));
+
+  ui.layerMode.addEventListener('change', updateLayerUI);
+
+  // Optional: auto-generate on these select/inputs (stable)
+  [ui.type, ui.repeat, ui.angle, ui.radialShapeSize, ui.radialPos, ui.conicPos, ui.layerMode].forEach(el => {
+    el.addEventListener('change', () => generate('control-change'));
+  });
+
+  // Init
+  fillMacroSelect();
+  renderStopsUI();
+  applyMacro('custom');
+  updateLayerUI();
+  generate('init');
+});
+</script>
+</body>
+</html>
+	

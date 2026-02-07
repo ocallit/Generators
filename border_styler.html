@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Border Generator</title>
+
+  <style>
+    :root{
+      --bg-color:#f4f7f9;
+      --panel-bg:#ffffff;
+      --text-color:#333;
+      --primary-color:#007bff;
+      --border-color:#dee2e6;
+      --code-bg:#e9ecef;
+    }
+
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+      background:var(--bg-color);
+      color:var(--text-color);
+      margin:0;
+      padding:1em;
+      display:flex;
+      justify-content:center;
+      align-items:flex-start;
+    }
+
+    main{
+      display:grid;
+      grid-template-columns:1fr;
+      gap:0.75rem;
+      width:100%;
+      max-width:99vw;
+    }
+
+    h1,h2{
+      border-bottom:2px solid var(--border-color);
+      padding-bottom:0.25rem;
+      margin:0.25rem 0;
+    }
+    h1{ color:var(--primary-color); }
+    h2{ font-weight:600; }
+
+    .controls{
+      background:var(--panel-bg);
+      padding:0.75rem;
+      border-radius:8px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+      display:flex;
+      flex-wrap:wrap;
+      gap:0.75rem;
+      align-items:flex-start;
+    }
+
+    .control-group{
+      display:flex;
+      flex-direction:column;
+      gap:0.5rem;
+      min-width:160px;
+      max-width:260px;
+    }
+    .control-group label{
+      font-weight:600;
+      white-space:nowrap;
+      cursor:help;
+    }
+    .control-group input[type="text"],
+    .control-group input[type="number"],
+    .control-group input[type="color"],
+    .control-group select,
+    .control-group input[type="range"]{
+      width:100%;
+      padding:0.5rem;
+      border:1px solid var(--border-color);
+      border-radius:4px;
+      font-size:1rem;
+      box-sizing:border-box;
+    }
+    .control-group input[type="color"]{ height:40px; padding:5px; }
+
+    .row{ display:flex; gap:0.5rem; align-items:center; }
+    .row > *{ flex:1; }
+
+    .output-container{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:0.75rem;
+    }
+
+    .preview-container,.code-container{
+      background:var(--panel-bg);
+      padding:0.75rem;
+      border-radius:8px;
+      box-shadow:0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .preview-stage{
+      border:1px solid var(--border-color);
+      border-radius:6px;
+      padding:1rem;
+      min-height:350px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      background:linear-gradient(135deg, rgba(0,0,0,0.02), rgba(0,0,0,0));
+    }
+
+    #previewBox{
+      width:320px;
+      height:200px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      border-radius:14px;
+      background:#ffffff;
+      font-weight:700;
+      user-select:none;
+    }
+
+    .code-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+    }
+
+    #copyButton{
+      padding:0.5rem 1rem;
+      border:1px solid var(--primary-color);
+      background:var(--primary-color);
+      color:#fff;
+      border-radius:4px;
+      cursor:pointer;
+    }
+    #copyButton:hover{ background:#0056b3; }
+
+    pre{
+      background:var(--code-bg);
+      padding:1rem;
+      border-radius:4px;
+      border:1px solid var(--border-color);
+      white-space:pre-wrap;
+      word-wrap:break-word;
+      margin-top:1rem;
+    }
+    code{ font-family:"SF Mono","Consolas","Menlo",monospace; font-size:0.95rem; }
+
+    .note{
+      font-size:0.9rem;
+      color:#6c757d;
+      background:#fff;
+      padding:1rem;
+      border-radius:8px;
+      border-left:4px solid var(--primary-color);
+    }
+
+    @media (max-width: 900px){
+      .output-container{ grid-template-columns:1fr; }
+    }
+  </style>
+
+  <style id="dynamic-styles"></style>
+</head>
+
+<body>
+<main>
+  <h1>Border Generator</h1>
+
+  <section class="controls">
+    <div class="control-group">
+      <label for="preset" title="Quick starting points. You can fine-tune after selecting.">Preset</label>
+      <select id="preset">
+        <option value="custom" selected>custom</option>
+        <option value="simple">simple</option>
+        <option value="pill">pill</option>
+        <option value="focusRing">focus ring</option>
+        <option value="gradientBorder">gradient border</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="boxBg" title="Preview box background color.">Box BG</label>
+      <input type="color" id="boxBg" value="#ffffff" />
+    </div>
+
+    <div class="control-group">
+      <label for="borderWidth" title="Border width in pixels.">Border Width (px)</label>
+      <input type="number" id="borderWidth" value="1" min="0" max="40" step="1" />
+    </div>
+
+    <div class="control-group">
+      <label for="borderStyle" title="Border style keyword.">Border Style</label>
+      <select id="borderStyle">
+        <option>solid</option>
+        <option>dashed</option>
+        <option>dotted</option>
+        <option>double</option>
+        <option>groove</option>
+        <option>ridge</option>
+        <option>inset</option>
+        <option>outset</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="borderBaseColor" title="Base border color before tint blending.">Border Base</label>
+      <input type="color" id="borderBaseColor" value="#dfe5ea" />
+    </div>
+
+    <div class="control-group">
+      <label for="borderOpacity" title="Alpha for border color (rgba).">Border Opacity</label>
+      <input type="range" id="borderOpacity" min="0" max="1" step="0.01" value="1" />
+      <input type="text" id="borderOpacityText" value="1" />
+    </div>
+
+    <div class="control-group">
+      <label for="tintColor" title="Tint color to blend into the border (brand color borders).">Tint Color</label>
+      <input type="color" id="tintColor" value="#007bff" />
+    </div>
+
+    <div class="control-group">
+      <label for="tintStrength" title="0 = no tint, 1 = full tint.">Tint Strength</label>
+      <input type="range" id="tintStrength" min="0" max="1" step="0.01" value="0.15" />
+      <input type="text" id="tintStrengthText" value="0.15" />
+    </div>
+
+    <div class="control-group">
+      <label for="radiusLinked" title="If on: one radius value applies to all corners.">Radius Linked?</label>
+      <select id="radiusLinked">
+        <option value="yes" selected>yes</option>
+        <option value="no">no</option>
+      </select>
+    </div>
+
+    <div class="control-group" id="radiusSingleGroup">
+      <label for="radiusAll" title="Border radius for all corners.">Radius (px)</label>
+      <input type="number" id="radiusAll" value="14" min="0" max="120" step="1" />
+    </div>
+
+    <div class="control-group" id="radiusCornersGroup" style="display:none;">
+      <label title="Per-corner radii (px).">Radius corners</label>
+      <div class="row">
+        <input type="number" id="rTL" value="14" min="0" max="120" step="1" title="top-left" />
+        <input type="number" id="rTR" value="14" min="0" max="120" step="1" title="top-right" />
+      </div>
+      <div class="row">
+        <input type="number" id="rBR" value="14" min="0" max="120" step="1" title="bottom-right" />
+        <input type="number" id="rBL" value="14" min="0" max="120" step="1" title="bottom-left" />
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label for="outlineOn" title="Outline is drawn outside border; great for focus rings.">Outline?</label>
+      <select id="outlineOn">
+        <option value="off" selected>off</option>
+        <option value="on">on</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="outlineWidth" title="Outline width in pixels.">Outline Width (px)</label>
+      <input type="number" id="outlineWidth" value="2" min="0" max="30" step="1" />
+    </div>
+
+    <div class="control-group">
+      <label for="outlineOffset" title="Outline offset in pixels.">Outline Offset (px)</label>
+      <input type="number" id="outlineOffset" value="2" min="-20" max="40" step="1" />
+    </div>
+
+    <div class="control-group">
+      <label for="outlineColor" title="Outline color.">Outline Color</label>
+      <input type="color" id="outlineColor" value="#007bff" />
+    </div>
+
+    <div class="control-group">
+      <label for="outlineOpacity" title="Outline alpha.">Outline Opacity</label>
+      <input type="range" id="outlineOpacity" min="0" max="1" step="0.01" value="0.35" />
+      <input type="text" id="outlineOpacityText" value="0.35" />
+    </div>
+
+    <div class="control-group">
+      <label for="insetRingOn" title="Inset ring simulates an inner border using box-shadow inset.">Inset Ring?</label>
+      <select id="insetRingOn">
+        <option value="off" selected>off</option>
+        <option value="on">on</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="insetRingSize" title="Inset ring thickness (px).">Inset Ring Size (px)</label>
+      <input type="number" id="insetRingSize" value="2" min="0" max="40" step="1" />
+    </div>
+
+    <div class="control-group">
+      <label for="insetRingColor" title="Inset ring color.">Inset Ring Color</label>
+      <input type="color" id="insetRingColor" value="#000000" />
+    </div>
+
+    <div class="control-group">
+      <label for="insetRingOpacity" title="Inset ring alpha.">Inset Ring Opacity</label>
+      <input type="range" id="insetRingOpacity" min="0" max="1" step="0.01" value="0.06" />
+      <input type="text" id="insetRingOpacityText" value="0.06" />
+    </div>
+
+    <div class="control-group">
+      <label for="gradientOn" title="Uses border-image with a gradient. Overrides normal border-color visually.">Gradient Border?</label>
+      <select id="gradientOn">
+        <option value="off" selected>off</option>
+        <option value="on">on</option>
+      </select>
+    </div>
+
+    <div class="control-group">
+      <label for="gradA" title="Gradient start color.">Gradient A</label>
+      <input type="color" id="gradA" value="#007bff" />
+    </div>
+
+    <div class="control-group">
+      <label for="gradB" title="Gradient end color.">Gradient B</label>
+      <input type="color" id="gradB" value="#f15c27" />
+    </div>
+
+    <div class="control-group">
+      <label for="gradAngle" title="Gradient angle in degrees.">Gradient Angle (deg)</label>
+      <input type="number" id="gradAngle" value="90" min="0" max="360" step="1" />
+    </div>
+  </section>
+
+  <section class="output-container">
+    <div class="preview-container">
+      <h2>Live Preview</h2>
+      <div class="preview-stage">
+        <div id="previewBox" class="bordered-box">Preview Box</div>
+      </div>
+    </div>
+
+    <div class="code-container">
+      <div class="code-header">
+        <h2>Your CSS</h2>
+        <button id="copyButton">Copy CSS</button>
+      </div>
+      <pre><code id="cssOutput"></code></pre>
+    </div>
+  </section>
+
+  <div class="note">
+    <strong>Notes:</strong>
+    Gradient borders use <code>border-image</code> (works well for rectangular/pill shapes).
+    For “focus rings”, prefer <code>outline</code> so layout doesn’t shift.
+  </div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const el = {
+    preset: document.getElementById('preset'),
+
+    boxBg: document.getElementById('boxBg'),
+
+    borderWidth: document.getElementById('borderWidth'),
+    borderStyle: document.getElementById('borderStyle'),
+    borderBaseColor: document.getElementById('borderBaseColor'),
+    borderOpacity: document.getElementById('borderOpacity'),
+    borderOpacityText: document.getElementById('borderOpacityText'),
+
+    tintColor: document.getElementById('tintColor'),
+    tintStrength: document.getElementById('tintStrength'),
+    tintStrengthText: document.getElementById('tintStrengthText'),
+
+    radiusLinked: document.getElementById('radiusLinked'),
+    radiusAll: document.getElementById('radiusAll'),
+    rTL: document.getElementById('rTL'),
+    rTR: document.getElementById('rTR'),
+    rBR: document.getElementById('rBR'),
+    rBL: document.getElementById('rBL'),
+    radiusSingleGroup: document.getElementById('radiusSingleGroup'),
+    radiusCornersGroup: document.getElementById('radiusCornersGroup'),
+
+    outlineOn: document.getElementById('outlineOn'),
+    outlineWidth: document.getElementById('outlineWidth'),
+    outlineOffset: document.getElementById('outlineOffset'),
+    outlineColor: document.getElementById('outlineColor'),
+    outlineOpacity: document.getElementById('outlineOpacity'),
+    outlineOpacityText: document.getElementById('outlineOpacityText'),
+
+    insetRingOn: document.getElementById('insetRingOn'),
+    insetRingSize: document.getElementById('insetRingSize'),
+    insetRingColor: document.getElementById('insetRingColor'),
+    insetRingOpacity: document.getElementById('insetRingOpacity'),
+    insetRingOpacityText: document.getElementById('insetRingOpacityText'),
+
+    gradientOn: document.getElementById('gradientOn'),
+    gradA: document.getElementById('gradA'),
+    gradB: document.getElementById('gradB'),
+    gradAngle: document.getElementById('gradAngle'),
+  };
+
+  const dynamicStyles = document.getElementById('dynamic-styles');
+  const cssOutput = document.getElementById('cssOutput');
+  const copyButton = document.getElementById('copyButton');
+  const previewBox = document.getElementById('previewBox');
+
+  function clamp01(n){
+    const x = Number(n);
+    if (Number.isNaN(x)) return 0;
+    return Math.max(0, Math.min(1, x));
+  }
+
+  function hexToRgb(hex){
+    const h = (hex || '').trim().replace('#','');
+    if (h.length === 3){
+      const r = parseInt(h[0] + h[0], 16);
+      const g = parseInt(h[1] + h[1], 16);
+      const b = parseInt(h[2] + h[2], 16);
+      return { r, g, b };
+    }
+    if (h.length === 6){
+      const r = parseInt(h.slice(0,2), 16);
+      const g = parseInt(h.slice(2,4), 16);
+      const b = parseInt(h.slice(4,6), 16);
+      return { r, g, b };
+    }
+    return { r:0, g:0, b:0 };
+  }
+
+  // base*(1-t) + tint*t
+  function mixRgb(baseHex, tintHex, t){
+    const a = hexToRgb(baseHex);
+    const b = hexToRgb(tintHex);
+    const tt = clamp01(t);
+    return {
+      r: Math.round(a.r*(1-tt) + b.r*tt),
+      g: Math.round(a.g*(1-tt) + b.g*tt),
+      b: Math.round(a.b*(1-tt) + b.b*tt),
+    };
+  }
+
+  function rgbaStr(rgb, a){
+    return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${clamp01(a)})`;
+  }
+
+  function setPreset(name){
+    if (name === 'simple'){
+      el.borderWidth.value = 1;
+      el.borderStyle.value = 'solid';
+      el.borderBaseColor.value = '#dfe5ea';
+      el.borderOpacity.value = 1;
+      el.borderOpacityText.value = '1';
+      el.tintStrength.value = 0.10;
+      el.tintStrengthText.value = '0.10';
+      el.radiusLinked.value = 'yes';
+      el.radiusAll.value = 12;
+      el.outlineOn.value = 'off';
+      el.insetRingOn.value = 'off';
+      el.gradientOn.value = 'off';
+    } else if (name === 'pill'){
+      el.borderWidth.value = 1;
+      el.borderStyle.value = 'solid';
+      el.borderBaseColor.value = '#dfe5ea';
+      el.borderOpacity.value = 1;
+      el.borderOpacityText.value = '1';
+      el.tintStrength.value = 0.15;
+      el.tintStrengthText.value = '0.15';
+      el.radiusLinked.value = 'yes';
+      el.radiusAll.value = 999;
+      el.outlineOn.value = 'off';
+      el.insetRingOn.value = 'off';
+      el.gradientOn.value = 'off';
+    } else if (name === 'focusRing'){
+      el.borderWidth.value = 1;
+      el.borderStyle.value = 'solid';
+      el.borderBaseColor.value = '#cfd8e3';
+      el.borderOpacity.value = 1;
+      el.borderOpacityText.value = '1';
+      el.tintStrength.value = 0.20;
+      el.tintStrengthText.value = '0.20';
+      el.radiusLinked.value = 'yes';
+      el.radiusAll.value = 12;
+
+      el.outlineOn.value = 'on';
+      el.outlineWidth.value = 3;
+      el.outlineOffset.value = 2;
+      el.outlineColor.value = '#0d6efd';
+      el.outlineOpacity.value = 0.35;
+      el.outlineOpacityText.value = '0.35';
+
+      el.insetRingOn.value = 'off';
+      el.gradientOn.value = 'off';
+    } else if (name === 'gradientBorder'){
+      el.borderWidth.value = 3;
+      el.borderStyle.value = 'solid';
+      el.borderBaseColor.value = '#ffffff';
+      el.borderOpacity.value = 1;
+      el.borderOpacityText.value = '1';
+      el.tintStrength.value = 0.0;
+      el.tintStrengthText.value = '0';
+      el.radiusLinked.value = 'yes';
+      el.radiusAll.value = 14;
+
+      el.gradientOn.value = 'on';
+      el.gradA.value = '#007bff';
+      el.gradB.value = '#f15c27';
+      el.gradAngle.value = 90;
+
+      el.outlineOn.value = 'off';
+      el.insetRingOn.value = 'off';
+    }
+  }
+
+  function syncRangeAndText(rangeEl, textEl){
+    textEl.value = String(rangeEl.value);
+  }
+  function syncTextToRange(textEl, rangeEl){
+    const v = clamp01(textEl.value);
+    rangeEl.value = String(v);
+    textEl.value = String(v);
+  }
+
+  function updateRadiusUI(){
+    const linked = (el.radiusLinked.value === 'yes');
+    el.radiusSingleGroup.style.display = linked ? '' : 'none';
+    el.radiusCornersGroup.style.display = linked ? 'none' : '';
+  }
+
+  function computeBorderRadius(){
+    if (el.radiusLinked.value === 'yes'){
+      const r = Math.max(0, Number(el.radiusAll.value) || 0);
+      return `${r}px`;
+    }
+    const tl = Math.max(0, Number(el.rTL.value) || 0);
+    const tr = Math.max(0, Number(el.rTR.value) || 0);
+    const br = Math.max(0, Number(el.rBR.value) || 0);
+    const bl = Math.max(0, Number(el.rBL.value) || 0);
+    return `${tl}px ${tr}px ${br}px ${bl}px`;
+  }
+
+  function update(){
+    updateRadiusUI();
+
+    syncRangeAndText(el.borderOpacity, el.borderOpacityText);
+    syncRangeAndText(el.tintStrength, el.tintStrengthText);
+    syncRangeAndText(el.outlineOpacity, el.outlineOpacityText);
+    syncRangeAndText(el.insetRingOpacity, el.insetRingOpacityText);
+
+    const boxBg = el.boxBg.value;
+
+    const bw = Math.max(0, Number(el.borderWidth.value) || 0);
+    const bs = el.borderStyle.value;
+
+    const borderOpacity = clamp01(el.borderOpacity.value);
+    const tintStrength = clamp01(el.tintStrength.value);
+
+    const borderRgb = mixRgb(el.borderBaseColor.value, el.tintColor.value, tintStrength);
+    const borderColorRgba = rgbaStr(borderRgb, borderOpacity);
+
+    const radius = computeBorderRadius();
+
+    // Outline
+    const outlineOn = (el.outlineOn.value === 'on');
+    const ow = Math.max(0, Number(el.outlineWidth.value) || 0);
+    const oo = Number(el.outlineOffset.value) || 0;
+    const outlineOpacity = clamp01(el.outlineOpacity.value);
+    const outlineRgb = mixRgb(el.outlineColor.value, el.tintColor.value, tintStrength);
+    const outlineRgba = rgbaStr(outlineRgb, outlineOpacity);
+
+    // Inset ring
+    const insetOn = (el.insetRingOn.value === 'on');
+    const irSize = Math.max(0, Number(el.insetRingSize.value) || 0);
+    const irOpacity = clamp01(el.insetRingOpacity.value);
+    const irRgb = mixRgb(el.insetRingColor.value, el.tintColor.value, tintStrength);
+    const irRgba = rgbaStr(irRgb, irOpacity);
+
+    // Gradient border (border-image)
+    const gradOn = (el.gradientOn.value === 'on');
+    const ga = el.gradA.value;
+    const gb = el.gradB.value;
+    const gAngle = Number(el.gradAngle.value) || 0;
+
+    let borderLine = `border: ${bw}px ${bs} ${borderColorRgba};`;
+    let borderImageLines = '';
+    if (gradOn && bw > 0) {
+      // border-image needs a border-style and border-width
+      borderLine = `border: ${bw}px ${bs} transparent;`;
+      borderImageLines =
+`  border-image: linear-gradient(${gAngle}deg, ${ga}, ${gb}) 1;`;
+    }
+
+    let outlineLines = '';
+    if (outlineOn && ow > 0) {
+      outlineLines =
+`  outline: ${ow}px solid ${outlineRgba};
+  outline-offset: ${oo}px;`;
+    }
+
+    let insetLines = '';
+    if (insetOn && irSize > 0) {
+      insetLines =
+`  box-shadow: inset 0 0 0 ${irSize}px ${irRgba};`;
+    }
+
+    const finalCss =
+`/* Generated CSS */
+.bordered-box {
+  background: ${boxBg};
+  border-radius: ${radius};
+  ${borderLine}
+${borderImageLines}
+${outlineLines}
+${insetLines}
+}`;
+
+    dynamicStyles.textContent = finalCss;
+    cssOutput.textContent = finalCss;
+
+    // Apply to preview
+    previewBox.style.background = boxBg;
+    previewBox.style.borderRadius = radius;
+
+    if (gradOn && bw > 0) {
+      previewBox.style.border = `${bw}px ${bs} transparent`;
+      previewBox.style.borderImage = `linear-gradient(${gAngle}deg, ${ga}, ${gb}) 1`;
+    } else {
+      previewBox.style.borderImage = '';
+      previewBox.style.border = `${bw}px ${bs} ${borderColorRgba}`;
+    }
+
+    if (outlineOn && ow > 0) {
+      previewBox.style.outline = `${ow}px solid ${outlineRgba}`;
+      previewBox.style.outlineOffset = `${oo}px`;
+    } else {
+      previewBox.style.outline = '';
+      previewBox.style.outlineOffset = '';
+    }
+
+    if (insetOn && irSize > 0) {
+      previewBox.style.boxShadow = `inset 0 0 0 ${irSize}px ${irRgba}`;
+    } else {
+      previewBox.style.boxShadow = '';
+    }
+  }
+
+  // Hook up all controls
+  Object.values(el).forEach(ctrl => {
+    ctrl.addEventListener('input', () => {
+      if (ctrl === el.preset) {
+        if (el.preset.value !== 'custom') setPreset(el.preset.value);
+      }
+      update();
+    });
+    ctrl.addEventListener('change', () => {
+      if (ctrl === el.preset) {
+        if (el.preset.value !== 'custom') setPreset(el.preset.value);
+      }
+      update();
+    });
+  });
+
+  el.borderOpacityText.addEventListener('change', () => { syncTextToRange(el.borderOpacityText, el.borderOpacity); update(); });
+  el.tintStrengthText.addEventListener('change', () => { syncTextToRange(el.tintStrengthText, el.tintStrength); update(); });
+  el.outlineOpacityText.addEventListener('change', () => { syncTextToRange(el.outlineOpacityText, el.outlineOpacity); update(); });
+  el.insetRingOpacityText.addEventListener('change', () => { syncTextToRange(el.insetRingOpacityText, el.insetRingOpacity); update(); });
+
+  el.radiusLinked.addEventListener('change', updateRadiusUI);
+
+  copyButton.addEventListener('click', () => {
+    navigator.clipboard.writeText(cssOutput.textContent).then(() => {
+      copyButton.textContent = 'Copied!';
+      setTimeout(() => copyButton.textContent = 'Copy CSS', 2000);
+    }).catch(err => console.error('Failed to copy:', err));
+  });
+
+  // Init
+  updateRadiusUI();
+  update();
+});
+</script>
+</body>
+</html>
