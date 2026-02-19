@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="es-MX">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <title>Theme Editor</title>
+    <style id="main-styles">
+        :root {
+            --body-bg: #ffffff;
+            --text-main: #1a1c1e;
+            --text-muted: #75777a;
+            --border-color: #c0c0c0;
+            --shadow: 4px 4px 0px 0px rgba(0, 141, 55, 0.2);
+
+            --primary-bg: #e0e7ff;
+            --primary-color: #4338ca;
+            --primary-on-color: #fdf2f8;
+            --primary-border: #312e81;
+            --primary-shadow: 4px 4px 0px 0px rgba(67, 56, 202, 0.4);
+
+            --secondary-bg: #ccfbf1;
+            --secondary-color: #0f766e;
+            --secondary-on-color: #f0fdf4;
+            --secondary-border: #134e4a;
+            --secondary-shadow: 4px 4px 0px 0px rgba(15, 118, 110, 0.3);
+
+            --accent-bg: #fef3c7;
+            --accent-color: #b45309;
+            --accent-on-color: #fffbeb;
+            --accent-border: #78350f;
+            --accent-shadow: 4px 4px 0px 0px rgba(180, 83, 9, 0.35);
+
+            --error-bg: #fee2e2;
+            --error-color: #b91c1c;
+            --error-on-color: #fff1f1;
+            --error-border: #7f1d1d;
+            --error-shadow: 4px 4px 0px 0px rgba(185, 28, 28, 0.4);
+
+            --warning-bg: #ffedd5;
+            --warning-color: #ea580c;
+            --warning-on-color: #fff7ed;
+            --warning-border: #9a3412;
+            --warning-shadow: 4px 4px 0px 0px rgba(234, 88, 12, 0.3);
+
+            --success-bg: #dcfce7;
+            --success-color: #15803d;
+            --success-on-color: #f7fee7;
+            --success-border: #14532d;
+            --success-shadow: 4px 4px 0px 0px rgba(21, 128, 61, 0.3);
+
+            --disabled-bg: #f3f4f6;
+            --disabled-color: #9ca3af;
+            --disabled-on-color: #e5e7eb;
+            --disabled-border: #374151;
+            --disabled-shadow: 4px 4px 0px 0px rgba(0, 0, 0, 0.05);
+        }
+</style>
+    <style>
+        BUTTON {cursor:pointer}
+        #cssRoot {
+            color:darkblue;
+            background-color: white;
+            font-family: ui-monospace;
+            margin:0.5em; padding:0.5em 0.3em;
+            border:4px double darkblue;
+            box-shadow: 4px 4px 0 0 rgba(0, 0, 233, 0.2);
+            max-width: 40vw;
+            white-space: pre-wrap; /* Allow wrapping */
+            word-break: break-all; /* backup old browsers */
+            word-wrap: break-word; /* Break long words if needed */
+            overflow-wrap: break-word; /* Modern equivalent */
+        }
+       .themeButton {padding: 0.2em 0.3em; }
+        .caption {
+            display:flex; flex-wrap: wrap;gap:0.3em;font-weight: bold; color:darkblue;
+            justify-content: start;align-items: center;
+        }
+
+        .flexRow {
+            display:flex; flex-direction: row; flex-wrap: wrap; gap:1em;
+            justify-content: flex-start;align-items: flex-start;
+        }
+        TABLE.laTabla {
+            max-width:99vw;
+            border-collapse: collapse;
+            border:1px cornflowerblue solid;
+            box-shadow: 4px 4px 0 0 rgba(0, 0, 233, 0.2);
+            margin-bottom: 2rem;
+            background: white;
+        }
+        TABLE.laTabla CAPTION { text-align: center; font-weight: bold; padding: 10px; }
+        TABLE.laTabla TH, TABLE.laTabla TD {
+            padding: 0.5em 0.3em;
+            border:1px cornflowerblue solid;
+            text-align: center;
+        }
+
+        .color-group { display: flex; flex-direction: column; align-items: center; gap: 2px; margin-bottom: 10px; }
+        .color-group label { font-size: 10px; font-weight: bold; }
+        .color-value { font-size: 9px; color: #666; font-family: monospace; }
+
+        .sample-box { padding: 2em; margin-bottom: 5px; border-radius: 4px; display: block; }
+        .var-label { font-size: 0.85em; color: #666; display: block; }
+    </style>
+</head>
+<body>
+<div class="caption">
+    <div class="generator-panel" style="padding: 15px; background: #eee; margin-bottom: 20px; border-radius: 8px; border: 1px solid #ccc;">
+        <label>Primary Base: <input type="color" id="gen-base-color" value="#4338ca"></label>
+        <label>Theory:
+            <select id="gen-theory">
+                <option value="gradient">Gradient (Monochromatic)</option>
+                <option value="opposite">Opposite (Complementary)</option>
+                <option value="triad">Color Threes (Triadic)</option>
+                <option value="analogous">Color Theory (Analogous)</option>
+            </select>
+        </label>
+        <button type="button" onclick="applyTheory()">Generate</button>
+    </div>
+    <div class="generator-panel" style="padding: 15px; background: #e3f2fd; margin-bottom: 20px; border-radius: 8px; border: 1px solid #2196f3;">
+        <h4 style="margin-top:0">Dual-Anchor Generator</h4>
+        <div class="flexRow" style="align-items: center;">
+            <label>Primary: <input type="color" id="gen-dual-primary" value="#4338ca"></label>
+            <label>Secondary: <input type="color" id="gen-dual-secondary" value="#0f766e"></label>
+            <label>Strategy:
+                <select id="gen-dual-strategy">
+                    <option value="interpolate">Interpolate (Blend)</option>
+                    <option value="split">Split Distribution</option>
+                    <option value="high-contrast">High Contrast (Vibrant)</option>
+                </select>
+            </label>
+            <button type="button" onclick="applyDualTheory()">Generate Dual Theme</button>
+        </div>
+    </div>
+    <div><button type="button" class="themeButton" onclick="copyCSS()">Copy :root</button></div>
+    <div><button type="button" class="themeButton" onclick="resetTheme()">Reset</button></div>
+</div>
+<div class="flexRow">
+
+    <div>
+        <table class="laTabla" id="themesTable">
+            <caption>Themes Editor</caption>
+            <thead>
+            <tr>
+                <th>Theme</th>
+                <th>Background</th>
+                <th>Foreground</th>
+                <th>Foreground On C</th>
+                <th>Border</th>
+                <th>Shadow</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th>Page</th>
+                <td>
+                    <div class="color-group"><label>--body-bg</label><input type="color" id="body-bg"><span
+                        class="color-value" id="val-body-bg"></span></div>
+                </td>
+                <td>
+                    <div class="color-group"><label>--text-main</label><input type="color" id="text-main"><span
+                        class="color-value" id="val-text-main"></span></div>
+                    <div class="color-group"><label>--text-muted</label><input type="color" id="text-muted"><span
+                        class="color-value" id="val-text-muted"></span></div>
+                </td>
+                <td>-</td>
+                <td>
+                    <div class="color-group"><label>--border-color</label><input type="color" id="border-color"><span
+                        class="color-value" id="val-border-color"></span></div>
+                </td>
+                <td>
+                    <div class="color-group"><label>--shadow</label><input type="color" id="shadow"><span
+                        class="color-value" id="val-shadow"></span></div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+        <div id="gradientPrimarySecondary" style="height: 60px; border-radius: 8px; margin: 10px 0; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+            Primary → Secondary → Accent
+        </div>
+        <pre id="cssRoot">
+
+        </pre>
+    </div>
+    <div>
+        <table class="laTabla" id="contrastTable">
+            <caption>Samples & Contrast</caption>
+            <thead>
+            <tr>
+                <th>Contrast Example</th>
+                <th>Ratio</th>
+                <th>Border Sample</th>
+                <th>Shadow Sample</th>
+                <th>Combined</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+</div>
+<script>
+    const themes = ["primary", "secondary", "accent", "error", "warning", "success", "disabled"];
+    const pairs = [
+        ["--text-main", "--body-bg"], ["--text-muted", "--body-bg"],
+        ["--primary-color", "--primary-bg"], ["--primary-on-color", "--primary-bg"], ["--primary-on-color", "--primary-color"],
+        ["--secondary-color", "--secondary-bg"], ["--secondary-on-color", "--secondary-bg"], ["--secondary-on-color", "--secondary-color"],
+        ["--accent-color", "--accent-bg"], ["--accent-on-color", "--accent-bg"], ["--accent-on-color", "--accent-color"],
+        ["--error-color", "--error-bg"], ["--error-on-color", "--error-bg"], ["--error-on-color", "--error-color"],
+        ["--warning-color", "--warning-bg"], ["--warning-on-color", "--warning-bg"], ["--warning-on-color", "--warning-color"],
+        ["--success-color", "--success-bg"], ["--success-on-color", "--success-bg"], ["--success-on-color", "--success-color"],
+        ["--disabled-color", "--disabled-bg"], ["--disabled-on-color", "--disabled-bg"], ["--disabled-on-color", "--disabled-color"], ["--disabled-color", "--body-bg"],
+        ["--text-main", "--secondary-bg"], ["--text-main", "--error-bg"], ["--text-main", "--warning-bg"], ["--text-main", "--success-bg"],
+        ["--primary-border", "--body-bg"], ["--secondary-border", "--body-bg"], ["--accent-border", "--body-bg"],
+        ["--error-border", "--body-bg"], ["--warning-border", "--body-bg"], ["--success-border", "--body-bg"],
+        ["--disabled-border", "--body-bg"], ["--text-muted", "--secondary-bg"], ["--text-muted", "--error-bg"],
+        ["--text-muted", "--success-bg"], ["--text-main", "--accent-bg"], ["--primary-shadow", "--body-bg"]
+    ];
+
+    function hexToRgba(hex) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, 1)`;
+    }
+
+    function initThemesTable() {
+        const tbody = document.querySelector("#themesTable tbody");
+        themes.forEach(t => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <th style="text-transform:capitalize">${t}</th>
+                <td><div class="color-group"><label>--${t}-bg</label><input type="color" id="${t}-bg"><span class="color-value" id="val-${t}-bg"></span></div></td>
+                <td><div class="color-group"><label>--${t}-color</label><input type="color" id="${t}-color"><span class="color-value" id="val-${t}-color"></span></div></td>
+                <td><div class="color-group"><label>--${t}-on-color</label><input type="color" id="${t}-on-color"><span class="color-value" id="val-${t}-on-color"></span></div></td>
+                <td><div class="color-group"><label>--${t}-border</label><input type="color" id="${t}-border"><span class="color-value" id="val-${t}-border"></span></div></td>
+                <td><div class="color-group"><label>--${t}-shadow</label><input type="color" id="${t}-shadow"><span class="color-value" id="val-${t}-shadow"></span></div></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function updateValueLabels() {
+        document.querySelectorAll('input[type="color"]').forEach(input => {
+            const hex = input.value;
+            const rgba = hexToRgba(hex);
+            const label = document.getElementById(`val-${input.id}`);
+            if(label) label.innerText = `${hex}\n${rgba}`;
+        });
+    }
+
+    function buildContrastTable() {
+        const styles = getComputedStyle(document.documentElement);
+        const tbody = document.querySelector("#contrastTable tbody");
+        tbody.innerHTML = "";
+
+        pairs.forEach(([fgVar, bgVar]) => {
+            const fg = styles.getPropertyValue(fgVar).trim();
+            const bg = styles.getPropertyValue(bgVar).trim();
+            if(!fg || !bg) return;
+
+            const dummy = document.createElement("div");
+            dummy.style.color = fg;
+            document.body.appendChild(dummy);
+            const rgb1 = getComputedStyle(dummy).color.match(/\d+/g).map(Number);
+            dummy.style.color = bg;
+            const rgb2 = getComputedStyle(dummy).color.match(/\d+/g).map(Number);
+            document.body.removeChild(dummy);
+
+            const lum = (rgb) => {
+                const a = rgb.map(v => {
+                    v /= 255;
+                    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+                });
+                return 0.2126 * a[0] + 0.7152 * a[1] + 0.0722 * a[2];
+            };
+            const ratio = ((Math.max(lum(rgb1), lum(rgb2)) + 0.05) / (Math.min(lum(rgb1), lum(rgb2)) + 0.05)).toFixed(2);
+            const icon = ratio >= 7 ? "🟢" : (ratio >= 4.5 ? "🟡" : "🔴");
+
+            let borderVar = fgVar.replace("-color", "-border");
+            if(styles.getPropertyValue(borderVar).trim() === "" || borderVar === fgVar) {
+                borderVar = "--border-color";
+            }
+
+
+            let shadowVar = fgVar.replace("-color", "-shadow");
+            if(styles.getPropertyValue(shadowVar).trim() === "" || shadowVar === fgVar) {
+                shadowVar = "--shadow";
+            }
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td><div class="sample-box" style="background:${bg}; color:${fg};">Example Text<br>${fgVar} on ${bgVar}</div><small class="var-label">${fgVar} on ${bgVar}</small></td>
+                <td><b>${ratio} ${icon}</b></td>
+                <td><div class="sample-box" style="border: 2px solid var(${borderVar});">Border</div><small class="var-label">${borderVar}</small></td>
+                <td><div class="sample-box" style="box-shadow: var(${shadowVar}); background: white;">Shadow</div><small class="var-label">${shadowVar}</small></td>
+                <td><div class="sample-box" style="border: 1px solid var(${borderVar}); box-shadow: var(${shadowVar});">Combo</div><small class="var-label">${borderVar}+${shadowVar}</small></td>
+            `;
+            tbody.appendChild(tr);
+        });
+        showRootCode();
+    }
+
+    function copyCSS() {
+        const styles = getComputedStyle(document.documentElement);
+        let css = ":root {\n";
+        // Iterate through all inputs to get current user selections
+        document.querySelectorAll('input[type="color"]').forEach(input => {
+            const varName = `--${input.id}`;
+            const val = styles.getPropertyValue(varName).trim();
+            css += `    ${varName}: ${val};\n`;
+        });
+        css += "}";
+        navigator.clipboard.writeText(css).then(() => alert("CSS Variables copied to clipboard!"));
+    }
+    // 1. Declare the storage object at the top of your script
+    let defaultTheme = {};
+
+    // 2. Your existing DOMContentLoaded with ONLY one added line (labeled below)
+    document.addEventListener("DOMContentLoaded", () => {
+        initThemesTable();
+
+        const styles = getComputedStyle(document.documentElement);
+        document.querySelectorAll('input[type="color"]').forEach(input => {
+            const val = styles.getPropertyValue('--' + input.id).trim();
+
+            // --- ADDED THIS LINE TO PRESERVE DEFAULTS ---
+            defaultTheme['--' + input.id] = val;
+
+            if(val) input.value = val.startsWith('#') ? val : "#000000";
+            input.addEventListener("input", (e) => {
+                document.documentElement.style.setProperty('--' + e.target.id, e.target.value);
+                updateValueLabels();
+                buildContrastTable();
+            });
+        });
+        updateValueLabels();
+        buildContrastTable();
+    });
+
+
+    function resetTheme() {
+        if (confirm("Are you sure you want to discard all changes?")) {
+            for (const [varName, value] of Object.entries(defaultTheme)) {
+                // Restore CSS variable
+                document.documentElement.style.setProperty(varName, value);
+
+                // Restore Input UI
+                const input = document.getElementById(varName.replace('--', ''));
+                if (input) {
+                    input.value = value.startsWith('#') ? value : "#000000";
+                }
+            }
+            // Refresh calculations
+            generateComplexGradient(defaultTheme);
+            updateValueLabels();
+            buildContrastTable();
+        }
+    }
+
+</script>
+<script>
+    function applyTheory() {
+        const baseHex = document.getElementById('gen-base-color').value;
+        const theory = document.getElementById('gen-theory').value;
+        const hsl = hexToHsl(baseHex);
+
+        let theme = {};
+
+        // 1. Core Color Logic for Primary, Secondary, and Accent
+        theme['--primary-color'] = baseHex;
+
+        if (theory === 'gradient') {
+            theme['--secondary-color'] = hslToHex(hsl.h, hsl.s, hsl.l > 50 ? hsl.l - 20 : hsl.l + 20);
+            theme['--accent-color'] = hslToHex(hsl.h, hsl.s - 20, 50);
+        } else if (theory === 'opposite') {
+            theme['--secondary-color'] = hslToHex((hsl.h + 180) % 360, hsl.s, 40);
+            theme['--accent-color'] = hslToHex((hsl.h + 150) % 360, hsl.s, 50);
+        } else if (theory === 'triad') {
+            theme['--secondary-color'] = hslToHex((hsl.h + 120) % 360, hsl.s, 40);
+            theme['--accent-color'] = hslToHex((hsl.h + 240) % 360, hsl.s, 40);
+        } else { // analogous
+            theme['--secondary-color'] = hslToHex((hsl.h + 30) % 360, hsl.s, 40);
+            theme['--accent-color'] = hslToHex((hsl.h - 30 + 360) % 360, hsl.s, 40);
+        }
+
+        // 2. Semantic Constants (Keeping Error/Warning in the Red/Orange spectrum)
+        theme['--error-color'] = "#b91c1c";
+        theme['--warning-color'] = "#ea580c";
+        theme['--success-color'] = "#15803d";
+        theme['--disabled-color'] = "#9ca3af";
+
+        // 3. Automated Generation for ALL Tiers (BG, Border, Shadow, On-Color)
+        const tiers = ['primary', 'secondary', 'accent', 'error', 'warning', 'success', 'disabled'];
+
+        tiers.forEach(tier => {
+            const color = theme[`--${tier}-color`];
+            const cHSL = hexToHsl(color);
+
+            // Generate Background (Very light tint)
+            theme[`--${tier}-bg`] = hslToHex(cHSL.h, Math.min(cHSL.s, 25), 97);
+
+            // Generate Border (Darker version of the color)
+            theme[`--${tier}-border`] = hslToHex(cHSL.h, Math.max(cHSL.s, 50), 30);
+
+            // Generate Foreground On-Color (White for dark colors, Black for light)
+            theme[`--${tier}-on-color`] = cHSL.l > 60 ? "#1a1c1e" : "#ffffff";
+
+            // Generate Tinted Shadow (4px offset using the tier's color at 25% opacity)
+            const rgb = hexToRgb(color);
+            theme[`--${tier}-shadow`] = `4px 4px 0px 0px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.25)`;
+        });
+
+        // Handle Page-specific variables
+        theme['--body-bg'] = "#ffffff";
+        theme['--text-main'] = "#1a1c1e";
+        theme['--text-muted'] = "#75777a";
+        theme['--border-color'] = "#c0c0c0";
+        theme['--shadow'] = "4px 4px 0px 0px rgba(0, 0, 0, 0.1)";
+
+        // 4. Update CSS :root and table#themesTable Inputs
+        for (const [vName, val] of Object.entries(theme)) {
+            document.documentElement.style.setProperty(vName, val);
+            const input = document.getElementById(vName.replace('--', ''));
+            if (input) {
+                // Inputs only accept HEX, so we strip shadows/rgba for the picker
+                input.value = val.startsWith('#') ? val : rgbToHex(val);
+            }
+        }
+        generateComplexGradient(theme);
+        // 5. Refresh your existing UI components
+        updateValueLabels();
+        buildContrastTable();
+        showRootCode();
+    }
+
+    /**
+     * Generates the text block for the :root variables
+     */
+    function showRootCode() {
+        const pre = document.getElementById('cssRoot');
+        pre.style.display = 'block';
+        let css = ":root {\n";
+
+        // Get all color inputs
+        document.querySelectorAll('#themesTable input[type="color"]').forEach(input => {
+            const varName = `--${input.id}`;
+            const val = getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+            css += `    ${varName}: ${val};\n`;
+        });
+
+        // Explicitly add the gradient variable
+        const gradVal = getComputedStyle(document.documentElement).getPropertyValue('--gradient-primary-secondary').trim();
+        if(gradVal) {
+            css += `    --gradient-primary-secondary: ${gradVal};\n`;
+        }
+
+        css += "}";
+        pre.textContent = css;
+    }
+
+    // Math Helpers
+    function hexToRgb(hex) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return { r, g, b };
+    }
+    /**
+     * Converts numeric RGB values back to a Hex string
+     * for compatibility with <input type="color">
+     */
+    function rgbToHex(r, g, b) {
+        const toHex = (n) => {
+            // Ensure n is a number, otherwise default to 0 to prevent crash
+            const val = (n !== undefined && n !== null) ? Math.round(n) : 0;
+            return val.toString(16).padStart(2, '0');
+        };
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+    function hexToHsl(hex) {
+        let {r, g, b} = hexToRgb(hex);
+        r /= 255; g /= 255; b /= 255;
+        let max = Math.max(r, g, b), min = Math.min(r, g, b);
+        let h, s, l = (max + min) / 2;
+        if (max == min) h = s = 0;
+        else {
+            let d = max - min;
+            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+            switch (max) {
+                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+                case g: h = (b - r) / d + 2; break;
+                case b: h = (r - g) / d + 4; break;
+            }
+            h /= 6;
+        }
+        return { h: h * 360, s: s * 100, l: l * 100 };
+    }
+
+    function hslToHex(h, s, l) {
+        l /= 100;
+        const a = s * Math.min(l, 1 - l) / 100;
+        const f = n => {
+            const k = (n + h / 30) % 12;
+            const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+            return Math.round(255 * color).toString(16).padStart(2, '0');
+        };
+        return `#${f(0)}${f(8)}${f(4)}`;
+    }
+</script>
+<script id="generateBasedOnPrimarySecondary">
+    /**
+     * Main entry point for generating themes using two anchor colors
+     */
+    /**
+     * Main entry point for generating themes using two anchor colors
+     */
+    function applyDualTheory() {
+        const pColor = document.getElementById('gen-dual-primary').value;
+        const sColor = document.getElementById('gen-dual-secondary').value;
+        const strategy = document.getElementById('gen-dual-strategy').value;
+
+        const pHSL = hexToHsl(pColor);
+        const sHSL = hexToHsl(sColor);
+
+        let theme = {};
+
+        // 1. Assign Core Anchors FIRST
+        theme['--primary-color'] = pColor;
+        theme['--secondary-color'] = sColor;
+
+        // 2. Determine Accent and Success based on Strategy
+        if (strategy === 'interpolate') {
+            theme['--accent-color'] = interpolateHex(pColor, sColor, 0.5);
+            theme['--success-color'] = interpolateHex(pColor, sColor, 0.8);
+        } else if (strategy === 'high-contrast') {
+            theme['--accent-color'] = hslToHex((pHSL.h + 120) % 360, Math.max(pHSL.s, 80), 50);
+            theme['--success-color'] = hslToHex(140, 70, 40);
+        } else { // split distribution
+            theme['--accent-color'] = hslToHex(sHSL.h, sHSL.s, Math.max(sHSL.l - 10, 20));
+            theme['--success-color'] = "#15803d";
+        }
+
+        generateComplexGradient(theme);
+
+        const gradientDiv = document.getElementById('gradientPrimarySecondary');
+        if (gradientDiv) {
+            gradientDiv.style.background = gradientString;
+        }
+
+        // 3. Mathematically Derived Semantic Bases
+        const pHue = pHSL.h;
+        const errorHue = lerpHue(0, pHue, 0.15);
+        theme['--error-color'] = hslToHex(errorHue, 80, 40);
+
+        const warningHue = lerpHue(35, pHue, 0.15);
+        theme['--warning-color'] = hslToHex(warningHue, 90, 45);
+
+        const successHue = lerpHue(140, sHSL.h, 0.15);
+        theme['--success-color'] = hslToHex(successHue, 70, 35);
+
+        theme['--disabled-color'] = hslToHex(pHue, 10, 65);
+
+        // 4. Automated Tier Generation (BGs, Borders, Shadows)
+        const tiers = ['primary', 'secondary', 'accent', 'error', 'warning', 'success', 'disabled'];
+
+        tiers.forEach(tier => {
+            const color = theme[`--${tier}-color`];
+            const cHSL = hexToHsl(color);
+            theme[`--${tier}-bg`] = hslToHex(cHSL.h, Math.min(cHSL.s, 25), 97);
+            theme[`--${tier}-border`] = hslToHex(cHSL.h, Math.max(cHSL.s, 50), 30);
+            theme[`--${tier}-on-color`] = cHSL.l > 60 ? "#1a1c1e" : "#ffffff";
+            const rgb = hexToRgb(color);
+            theme[`--${tier}-shadow`] = `4px 4px 0px 0px rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.25)`;
+        });
+
+        // 5. Apply Page Defaults
+        theme['--body-bg'] = "#ffffff";
+        theme['--text-main'] = "#1a1c1e";
+        theme['--text-muted'] = "#75777a";
+        theme['--border-color'] = "#c0c0c0";
+        theme['--shadow'] = "4px 4px 0px 0px rgba(0, 0, 0, 0.1)";
+
+        // 6. Final UI Update
+        updateUIFromThemeObject(theme);
+    }
+
+    /**
+     * Helper to update all inputs and CSS variables from a generated object
+     */
+    function updateUIFromThemeObject(theme) {
+        for (const [vName, val] of Object.entries(theme)) {
+            document.documentElement.style.setProperty(vName, val);
+
+            // Handle standard hex inputs
+            const input = document.getElementById(vName.replace('--', ''));
+            if (input && val.startsWith('#')) {
+                input.value = val;
+            }
+        }
+
+        updateValueLabels();
+        buildContrastTable();
+        showRootCode();
+    }
+
+    /**
+     * Mixes two hex colors by a weight (0 to 1)
+     */
+    function interpolateHex(color1, color2, weight) {
+        const c1 = hexToRgb(color1);
+        const c2 = hexToRgb(color2);
+
+        const r = Math.round(c1.r + (c2.r - c1.r) * weight);
+        const g = Math.round(c1.g + (c2.g - c1.g) * weight);
+        const b = Math.round(c1.b + (c2.b - c1.b) * weight);
+
+        return rgbToHex(r, g, b);
+    }
+    /**
+     * Linearly interpolates between two hues (0-360) taking the shortest path
+     * @param {number} h1 - Starting hue
+     * @param {number} h2 - Target hue
+     * @param {number} t - Percentage (0 to 1)
+     */
+    function lerpHue(h1, h2, t) {
+        const diff = (h2 - h1 + 180) % 360 - 180;
+        return (h1 + diff * t + 360) % 360;
+    }
+    function generateComplexGradient(theme) {
+
+        const p = theme['--primary-color'];
+        const s = theme['--secondary-color'];
+        const a = theme['--accent-color'];
+
+        const pHSL = hexToHsl(p);
+        const sHSL = hexToHsl(s);
+        const aHSL = hexToHsl(a);
+
+        // 9 stops for Primary (0% to 50%)
+        const pStops = [];
+        for (let i = 0; i < 9; i++) {
+            // vary lightness slightly for texture
+            const l = Math.max(0, Math.min(100, pHSL.l + (i - 4) * 2));
+            pStops.push(`${hslToHex(pHSL.h, pHSL.s, l)} ${(i / 8) * 50}%`);
+        }
+
+        // 5 stops for Secondary (50% to 80%)
+        const sStops = [];
+        for (let i = 0; i < 5; i++) {
+            const l = Math.max(0, Math.min(100, sHSL.l + (i - 2) * 3));
+            sStops.push(`${hslToHex(sHSL.h, sHSL.s, l)} ${50 + (i / 4) * 30}%`);
+        }
+
+        // 3 stops for Accent (80% to 100%)
+        const aStops = [];
+        for (let i = 0; i < 3; i++) {
+            const l = Math.max(0, Math.min(100, aHSL.l + (i - 1) * 5));
+            aStops.push(`${hslToHex(aHSL.h, aHSL.s, l)} ${80 + (i / 2) * 20}%`);
+        }
+
+        const gradientString = `linear-gradient(135deg, ${pStops.join(', ')}, ${sStops.join(', ')}, ${aStops.join(', ')})`;
+
+        theme['--gradient-primary-secondary'] = gradientString;
+        const gradientDiv = document.getElementById('gradientPrimarySecondary');
+        if (gradientDiv) {
+            gradientDiv.style.background = gradientString;
+        }
+        return gradientString;
+    }
+
+    function generateRadialGradient(theme) {
+        const p = theme['--primary-color'];
+        const s = theme['--secondary-color'];
+        const a = theme['--accent-color'];
+
+        const pHSL = hexToHsl(p);
+        const sHSL = hexToHsl(s);
+        const aHSL = hexToHsl(a);
+
+        // 9 stops for Primary (0% to 50%)
+        const pStops = [];
+        for (let i = 0; i < 9; i++) {
+            // ✅ MINIMAL CHANGE: boost center stops (i=4 is ~25% position) for 3D highlight
+            const lightnessBoost = i === 4 ? 15 : (i === 3 || i === 5 ? 8 : 0);
+            const l = Math.max(0, Math.min(100, pHSL.l + (i - 4) * 2 + lightnessBoost));
+            pStops.push(`${hslToHex(pHSL.h, pHSL.s, l)} ${(i / 8) * 50}%`);
+        }
+
+        // 5 stops for Secondary (50% to 80%)
+        const sStops = [];
+        for (let i = 0; i < 5; i++) {
+            // ✅ MINIMAL CHANGE: subtle boost at center of secondary range
+            const lightnessBoost = i === 2 ? 10 : 0;
+            const l = Math.max(0, Math.min(100, sHSL.l + (i - 2) * 3 + lightnessBoost));
+            sStops.push(`${hslToHex(sHSL.h, sHSL.s, l)} ${50 + (i / 4) * 30}%`);
+        }
+
+        // 3 stops for Accent (80% to 100%)
+        const aStops = [];
+        for (let i = 0; i < 3; i++) {
+            const l = Math.max(0, Math.min(100, aHSL.l + (i - 1) * 5));
+            aStops.push(`${hslToHex(aHSL.h, aHSL.s, l)} ${80 + (i / 2) * 20}%`);
+        }
+
+        // ✅ MINIMAL CHANGE: radial instead of linear + offset light source
+        const gradientString = `radial-gradient(circle at 48% 42%, ${pStops.join(', ')}, ${sStops.join(', ')}, ${aStops.join(', ')})`;
+
+        theme['--gradient-primary-secondary'] = gradientString;
+        const gradientDiv = document.getElementById('gradientPrimarySecondary');
+        if (gradientDiv) {
+            gradientDiv.style.background = gradientString;
+            // ✅ MINIMAL CHANGE: subtle inset shadow for depth
+            gradientDiv.style.boxShadow = 'inset 0 3px 10px rgba(0,0,0,0.12)';
+        }
+        return gradientString;
+    }
+</script>
+</body>
+</html>
