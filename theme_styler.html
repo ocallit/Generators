@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <title>Theme Editor</title>
+    <title>Theme Styler</title>
     <style id="main-styles">
         :root {
             --body-bg: #ffffff;
@@ -176,8 +176,11 @@
             </tr>
             </tbody>
         </table>
-        <div id="gradientPrimarySecondary" style="height: 60px; border-radius: 8px; margin: 10px 0; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
-            Primary → Secondary → Accent
+        <div id="gradientLinear" style="height: 60px; border-radius: 8px; margin: 10px 0; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+            --gradient-linear
+        </div>
+        <div id="gradientConic" style="height: 60px; border-radius: 8px; margin: 10px 0; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">
+            --gradient-conic
         </div>
         <pre id="cssRoot">
 
@@ -352,7 +355,7 @@
                 }
             }
             // Refresh calculations
-            generateComplexGradient(defaultTheme);
+            generateEnhancedGradients(defaultTheme);
             updateValueLabels();
             buildContrastTable();
         }
@@ -427,7 +430,7 @@
                 input.value = val.startsWith('#') ? val : rgbToHex(val);
             }
         }
-        generateComplexGradient(theme);
+        generateEnhancedGradients(theme);
         // 5. Refresh your existing UI components
         updateValueLabels();
         buildContrastTable();
@@ -450,11 +453,14 @@
         });
 
         // Explicitly add the gradient variable
-        const gradVal = getComputedStyle(document.documentElement).getPropertyValue('--gradient-primary-secondary').trim();
+        const gradVal = getComputedStyle(document.documentElement).getPropertyValue('--gradient-linear').trim();
         if(gradVal) {
-            css += `    --gradient-primary-secondary: ${gradVal};\n`;
+            css += `    --gradient-linear: ${gradVal};\n`;
         }
-
+        const gradValConic = getComputedStyle(document.documentElement).getPropertyValue('--gradient-conic').trim();
+        if(gradValConic) {
+            css += `    --gradient-conic: ${gradValConic};\n`;
+        }
         css += "}";
         pre.textContent = css;
     }
@@ -541,12 +547,8 @@
             theme['--success-color'] = "#15803d";
         }
 
-        generateComplexGradient(theme);
+        generateEnhancedGradients(theme);
 
-        const gradientDiv = document.getElementById('gradientPrimarySecondary');
-        if (gradientDiv) {
-            gradientDiv.style.background = gradientString;
-        }
 
         // 3. Mathematically Derived Semantic Bases
         const pHue = pHSL.h;
@@ -627,93 +629,89 @@
         const diff = (h2 - h1 + 180) % 360 - 180;
         return (h1 + diff * t + 360) % 360;
     }
-    function generateComplexGradient(theme) {
 
+
+    function generateEnhancedGradients(theme) {
         const p = theme['--primary-color'];
         const s = theme['--secondary-color'];
         const a = theme['--accent-color'];
 
-        const pHSL = hexToHsl(p);
-        const sHSL = hexToHsl(s);
-        const aHSL = hexToHsl(a);
+        // --- Linear 3D Effect (Cylinder) ---
+        theme['--gradient-linear'] = `linear-gradient(to bottom, ${create3DGradientStops(p)})`;
+        const lin = document.getElementById('gradientLinear');
+        if(lin) lin.style.background = theme['--gradient-linear'];
 
-        // 9 stops for Primary (0% to 50%)
-        const pStops = [];
-        for (let i = 0; i < 9; i++) {
-            // vary lightness slightly for texture
-            const l = Math.max(0, Math.min(100, pHSL.l + (i - 4) * 2));
-            pStops.push(`${hslToHex(pHSL.h, pHSL.s, l)} ${(i / 8) * 50}%`);
+
+
+        const sequence = [p, s, a, p];
+        const cStops = [];
+        const totalSteps = 24;
+
+        for (let i = 0; i < totalSteps; i++) {
+            const progress = i / (totalSteps - 1);
+            const segment = Math.floor(progress * (sequence.length - 1));
+            const weight = (progress * (sequence.length - 1)) % 1;
+
+            const baseColor = interpolateHex(sequence[segment], sequence[segment + 1] || sequence[0], weight);
+            const rgb = hexToRgb(baseColor);
+
+            // Specular Sweep Logic: Creates 3 broad highlights instead of sharp lines
+            // Using a sine wave synchronized with the 3-color transition
+            const angle = (i / totalSteps) * Math.PI * 6; // 3 peaks (6PI) across 360 degrees
+            const shine = Math.pow(Math.sin(angle), 4); // Sharpen the curve for a metallic glint
+
+            // Blend toward white based on the shine factor
+            const nr = Math.round(rgb.r + (255 - rgb.r) * (shine * 0.6));
+            const ng = Math.round(rgb.g + (255 - rgb.g) * (shine * 0.6));
+            const nb = Math.round(rgb.b + (255 - rgb.b) * (shine * 0.6));
+
+            const finalHex = rgbToHex(nr, ng, nb);
+            const pos = (progress * 100).toFixed(1);
+
+            cStops.push(finalHex + " " + pos + "%");
         }
 
-        // 5 stops for Secondary (50% to 80%)
-        const sStops = [];
-        for (let i = 0; i < 5; i++) {
-            const l = Math.max(0, Math.min(100, sHSL.l + (i - 2) * 3));
-            sStops.push(`${hslToHex(sHSL.h, sHSL.s, l)} ${50 + (i / 4) * 30}%`);
-        }
-
-        // 3 stops for Accent (80% to 100%)
-        const aStops = [];
-        for (let i = 0; i < 3; i++) {
-            const l = Math.max(0, Math.min(100, aHSL.l + (i - 1) * 5));
-            aStops.push(`${hslToHex(aHSL.h, aHSL.s, l)} ${80 + (i / 2) * 20}%`);
-        }
-
-        const gradientString = `linear-gradient(135deg, ${pStops.join(', ')}, ${sStops.join(', ')}, ${aStops.join(', ')})`;
-
-        theme['--gradient-primary-secondary'] = gradientString;
-        const gradientDiv = document.getElementById('gradientPrimarySecondary');
-        if (gradientDiv) {
-            gradientDiv.style.background = gradientString;
-        }
-        return gradientString;
+        theme['--gradient-conic'] = "conic-gradient(from 45deg at 50% 50%, " + cStops.join(', ') + ")";
+        const con = document.getElementById('gradientConic');
+        if(con) con.style.background = theme['--gradient-conic'];
     }
+    function create3DGradientStops(hex) {
+        const rgb = hexToRgb(hex);
+        const r = rgb.r, g = rgb.g, b = rgb.b;
 
-    function generateRadialGradient(theme) {
-        const p = theme['--primary-color'];
-        const s = theme['--secondary-color'];
-        const a = theme['--accent-color'];
+        // Specular Tint Helper: Blends the base color toward white (f: 0 to 1)
+        // This creates a "glow" rather than a flat line of paint.
+        const t = (f) => {
+            const nr = Math.round(r + (255 - r) * f);
+            const ng = Math.round(g + (255 - g) * f);
+            const nb = Math.round(b + (255 - b) * f);
+            return "#" + ((1 << 24) + (nr << 16) + (ng << 8) + nb).toString(16).slice(1);
+        };
 
-        const pHSL = hexToHsl(p);
-        const sHSL = hexToHsl(s);
-        const aHSL = hexToHsl(a);
+        // Deep Shade Helper: For the bottom falloff
+        const s = (f) => {
+            const nr = Math.round(r * f);
+            const ng = Math.round(g * f);
+            const nb = Math.round(b * f);
+            return "#" + ((1 << 24) + (nr << 16) + (ng << 8) + nb).toString(16).slice(1);
+        };
 
-        // 9 stops for Primary (0% to 50%)
-        const pStops = [];
-        for (let i = 0; i < 9; i++) {
-            // ✅ MINIMAL CHANGE: boost center stops (i=4 is ~25% position) for 3D highlight
-            const lightnessBoost = i === 4 ? 15 : (i === 3 || i === 5 ? 8 : 0);
-            const l = Math.max(0, Math.min(100, pHSL.l + (i - 4) * 2 + lightnessBoost));
-            pStops.push(`${hslToHex(pHSL.h, pHSL.s, l)} ${(i / 8) * 50}%`);
-        }
+        // Constructing the string step-by-step to match your high-fidelity example logic
+        // We remove percentages from the center to let the browser distribute the light naturally.
+        const stop0  = "#000000 0%";   // Sharp black rim
+        const stop1  = t(0.0) + " 1%"; // Base color starts immediately at 1% (Thin bands)
+        const stop2  = t(0.20);        // Natural rise
+        const stop3  = t(0.45);        // Mid-tone glow
+        const stop4  = t(0.70);        // Leading edge of highlight
+        const stop5  = t(0.92);        // THE HOT PEAK (Tinted highlight, not flat white)
+        const stop6  = t(0.70);        // Falloff
+        const stop7  = t(0.45);        // Transition
+        const stop8  = t(0.20);        // Returning to base
+        const stop9  = s(0.82) + " 99%";// Deep base end for 3D curvature
+        const stop10 = "#000000 100%"; // Sharp black rim
 
-        // 5 stops for Secondary (50% to 80%)
-        const sStops = [];
-        for (let i = 0; i < 5; i++) {
-            // ✅ MINIMAL CHANGE: subtle boost at center of secondary range
-            const lightnessBoost = i === 2 ? 10 : 0;
-            const l = Math.max(0, Math.min(100, sHSL.l + (i - 2) * 3 + lightnessBoost));
-            sStops.push(`${hslToHex(sHSL.h, sHSL.s, l)} ${50 + (i / 4) * 30}%`);
-        }
-
-        // 3 stops for Accent (80% to 100%)
-        const aStops = [];
-        for (let i = 0; i < 3; i++) {
-            const l = Math.max(0, Math.min(100, aHSL.l + (i - 1) * 5));
-            aStops.push(`${hslToHex(aHSL.h, aHSL.s, l)} ${80 + (i / 2) * 20}%`);
-        }
-
-        // ✅ MINIMAL CHANGE: radial instead of linear + offset light source
-        const gradientString = `radial-gradient(circle at 48% 42%, ${pStops.join(', ')}, ${sStops.join(', ')}, ${aStops.join(', ')})`;
-
-        theme['--gradient-primary-secondary'] = gradientString;
-        const gradientDiv = document.getElementById('gradientPrimarySecondary');
-        if (gradientDiv) {
-            gradientDiv.style.background = gradientString;
-            // ✅ MINIMAL CHANGE: subtle inset shadow for depth
-            gradientDiv.style.boxShadow = 'inset 0 3px 10px rgba(0,0,0,0.12)';
-        }
-        return gradientString;
+        // Joined manually as requested
+        return stop0 + ", " + stop1 + ", " + stop2 + ", " + stop3 + ", " + stop4 + ", " + stop5 + ", " + stop6 + ", " + stop7 + ", " + stop8 + ", " + stop9 + ", " + stop10;
     }
 </script>
 </body>
