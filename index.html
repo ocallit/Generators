@@ -1,25 +1,109 @@
 <!DOCTYPE html>
-<html lang="es-MX">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <title>Ocallit's Generators</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generators - Ocallit's CSS Tools</title>
     <style>
-        body {padding:1em;}
-        h1 {text-align: center}
-        ul {text-align: left;}
-        li {margin:1em auto}
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #333;
+            margin: 0;
+        }
+        .github-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+        }
+        .github-link:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .github-link svg {
+            width: 32px;
+            height: 32px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin: 0 0 30px 0;
+        }
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .tool-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-decoration: none;
+            color: #333;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .tool-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .tool-card h2 {
+            margin-top: 0;
+            color: #2c3e50;
+        }
     </style>
 </head>
 <body>
-<h1>Ocallit's CSS Generators</h1>
-<ul>
-    <li><a href="border_styler.html">Border</a></li>
-    <li><a href="theme_styler.html">Color Theme</a></li>
-    <li><a href="gradient_styler.html">Gradient</a></li>
-    <li><a href="scrollbar_styler.html">Scrollbar</a></li>
-    <li><a href="shadow_border_styler.html">Shadow</a></li>
-</ul>
+    <div class="header">
+        <h1>Ocallit CSS Generators & Tools</h1>
+        <a href="https://github.com/ocallit/Generators" class="github-link" title="View on GitHub">
+            <svg fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+        </a>
+    </div>
+    
+    <p class="subtitle">A collection of useful CSS styling tools</p>
+    
+    <div class="tools-grid">
+        <a href="border_styler.html" class="tool-card">
+            <h2>Border Styler</h2>
+            <p>Generate custom border styles with visual preview</p>
+        </a>
+        <a href="gradient_styler.html" class="tool-card">
+            <h2>Gradient Styler</h2>
+            <p>Create beautiful CSS gradients</p>
+        </a>
+        <a href="scrollbar_styler.html" class="tool-card">
+            <h2>Scrollbar Styler</h2>
+            <p>Customize scrollbar appearance</p>
+        </a>
+        <a href="shadow_border_styler.html" class="tool-card">
+            <h2>Shadow Border Styler</h2>
+            <p>Design shadow and border combinations</p>
+        </a>
+        <a href="theme_styler.html" class="tool-card">
+            <h2>Theme Styler</h2>
+            <p>Create custom CSS themes</p>
+        </a>
+    </div>
 </body>
 </html>
