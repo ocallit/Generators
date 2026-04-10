@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top 7 Screen Serifs - Full Character Set</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitter:ital,wght@0,400;0,700;1,400&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,700;1,400&family=Lora:ital,wght@0,400;0,700;1,400&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,700;1,400&family=Roboto+Serif:ital,opsz,wght@0,8..144,400;0,8..144,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg: #fdfdfd;
+            --text: #1a1a1a;
+            --border: #e0e0e0;
+            --accent: #0056b3;
+        }
+
+        body {
+            font-family: sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 30px;
+            line-height: 1.4;
+        }
+
+        header {
+            border-bottom: 2px solid var(--text);
+            margin-bottom: 30px;
+            padding-bottom: 10px;
+        }
+
+        .controls {
+            margin-bottom: 40px;
+            background: #f4f4f4;
+            padding: 20px;
+            border-radius: 4px;
+        }
+
+        input[type="text"] {
+            padding: 12px;
+            font-size: 1.2rem;
+            width: 100%;
+            max-width: 800px;
+            border: 1px solid var(--border);
+            box-sizing: border-box;
+        }
+
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 50px;
+        }
+
+        .font-row {
+            border-left: 5px solid #eee;
+            padding-left: 25px;
+            transition: border-color 0.2s;
+        }
+
+        .font-row:hover {
+            border-left-color: var(--accent);
+        }
+
+        .font-label {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Sample Styles */
+        .sample-text {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+            word-wrap: break-word; /* NON-NEGOTIABLE: Never hide content */
+        }
+
+        .alphabet-strip {
+            font-size: 1.1rem;
+            color: #444;
+            line-height: 1.6;
+            word-break: break-all;
+            margin-bottom: 10px;
+        }
+
+        .commentary {
+            font-size: 0.85rem;
+            color: #666;
+            max-width: 600px;
+            font-style: italic;
+        }
+
+        /* Font Classes */
+        .literata { font-family: 'Literata', serif; }
+        .roboto-serif { font-family: 'Roboto Serif', serif; }
+        .lora { font-family: 'Lora', serif; }
+        .merriweather { font-family: 'Merriweather', serif; }
+        .newsreader { font-family: 'Newsreader', serif; }
+        .baskerville { font-family: 'Libre Baskerville', serif; }
+        .bitter { font-family: 'Bitter', serif; }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Top 7 Screen Serif Comparison</h1>
+    </header>
+	<h2>Tips</h2>
+<ul>
+	<li>line-height: 
+	<ul>
+		<li>Text: 1.5em to 1.6em</li>
+		<li>Heading: 1.1em to 1.2em</li>
+	</ul>	
+	<li>letter-spacing
+<ul>
+		<li>Font Size 16px–20px do not change</li>
+		<li>Heading: letter-spacing: 0.05em;</li>
+		<li>Large title: -0.01em</li>
+</ul>	
+<lI>Paragraphs: p {
+  margin-top: 0;
+  margin-bottom: 0;
+  text-indent: 1.5em; /* Traditional indent size */
+}
+<br>
+p.first-para {
+  text-indent: 0;
+}/* Remove indent from the very first paragraph of a chapter */
+</ul>	
+<h2>Sample Text</h2>
+    <div class="controls">
+        <label for="phrase-input" style="display:block; margin-bottom:8px;"><strong>Test Story Phrase:</strong></label>
+        <input type="text" id="phrase-input" value="The quick brown fox jumps over the lazy dog." oninput="updatePhrase(this.value)">
+    </div>
+<h2>Font comparison</h2>
+    <div class="comparison-grid">
+
+        <section class="font-row">
+            <span class="font-label">Literata (Google's Digital Masterpiece)</span>
+            <div class="sample-text literata editable">The quick brown fox jumps over the lazy dog.</div>
+            <div class="alphabet-strip literata">
+                ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+                abcdefghijklmnopqrstuvwxyz<br>
+                1234567890 &?!@#% (€£$¥)
+            </div>
+            <div class="commentary">Optimized for long-form immersion. Low contrast prevents flickering on backlit screens. Raw Support: High.</div>
+        </section>
+
+        <section class="font-row">
+            <span class="font-label">Roboto Serif (The Modern Workhorse)</span>
+            <div class="sample-text roboto-serif editable">The quick brown fox jumps over the lazy dog.</div>
+            <div class="alphabet-strip roboto-serif">
+                ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+                abcdefghijklmnopqrstuvwxyz<br>
+                1234567890 &?!@#% (€£$¥)
+            </div>
+            <div class="commentary">A highly legible, industrial serif. Perfect for Sci-Fi or technical non-fiction. Raw Support: High.</div>
+        </section>
+
+        <section class="font-row">
+            <span class="font-label">Lora (Elegant & Contemporary)</span>
+            <div class="sample-text lora editable">The quick brown fox jumps over the lazy dog.</div>
+            <div class="alphabet-strip lora">
+                ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+                abcdefghijklmnopqrstuvwxyz<br>
+                1234567890 &?!@#% (€£$¥)
+            </div>
+            <div class="commentary">Excellent curves and calligraphic roots. Feels warm and literary. Raw Support: High.</div>
+        </section>
+
+        <section class="font-row">
+            <span class="font-label">Merriweather (Maximum Legibility)</span>
+            <div class="sample-text merriweather editable">The quick brown fox jumps over the lazy dog.</div>
+            <div class="alphabet-strip merriweather">
+                ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+                abcdefghijklmnopqrstuvwxyz<br>
+                1234567890 &?!@#% (€£$¥)
+            </div>
+            <div class="commentary">Massive x-height. Lowercase letters are very tall, making it the best for small phone screens. Raw Support: High.</div>
+        </section>
+
+        <section class="font-row">
+            <span class="font-label">Newsreader (E-Ink Specialist)</span>
+            <div class="sample-text newsreader editable">The quick brown fox jumps over the lazy dog.</div>
+            <div class="alphabet-strip newsreader">
+                ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+                abcdefghijklmnopqrstuvwxyz<br>
+                1234567890 &?!@#% (€£$¥)
+            </div>
+            <div class="commentary">Designed for continuous reading. Performs exceptionally well on Kindle/E-ink devices. Raw Support: High.</div>
+        </section>
+
+        <section class="font-row">
+            <span class="font-label">Libre Baskerville (The Historical Choice)</span>
+            <div class="sample-text baskerville editable">The quick brown fox jumps over the lazy dog.</div>
+            <div class="alphabet-strip baskerville">
+                ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+                abcdefghijklmnopqrstuvwxyz<br>
+                1234567890 &?!@#% (€£$¥)
+            </div>
+            <div class="commentary">Sturdy serifs that don't disappear at 16px. Ideal for Historical Fiction. Raw Support: High.</div>
+        </section>
+
+        <section class="font-row">
+            <span class="font-label">Bitter (Slab-Serif Stability)</span>
+            <div class="sample-text bitter editable">The quick brown fox jumps over the lazy dog.</div>
+            <div class="alphabet-strip bitter">
+                ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+                abcdefghijklmnopqrstuvwxyz<br>
+                1234567890 &?!@#% (€£$¥)
+            </div>
+            <div class="commentary">High-thickness serifs make it extremely stable. It never feels "thin" or "weak" on bright screens. Raw Support: High.</div>
+        </section>
+
+    </div>
+
+    <script>
+        function updatePhrase(val) {
+            const targets = document.querySelectorAll('.editable');
+            targets.forEach(el => {
+                el.textContent = val;
+            });
+        }
+    </script>
+</body>
+</html>
