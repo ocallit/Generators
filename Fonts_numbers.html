@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numeric Font Comparison - Tabular Alignment</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&family=IBM+Plex+Mono:wght@400;700&family=Inconsolata:wght@400;700&family=JetBrains+Mono:wght@400;700&family=Roboto+Mono:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 40px;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .container { max-width: 1300px; margin: 0 auto; }
+        h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            margin-top: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        th, td {
+			vertical-align:top;
+            padding: 12px 15px;
+            border: 1px solid #dee2e6;
+        }
+
+        th { background-color: #eee; font-size: 0.8rem; text-transform: uppercase; }
+
+        /* The alignment classes */
+        .num-cell { text-align: right;  }
+        .bold { font-weight: 700; color: black; border-top: 5px double #444; margin:0 auto;}
+        .normal { font-weight: normal; color:black; margin:0 auto; }
+        
+        .font-info { width: 250px; }
+        .font-name { font-weight: bold; display: block; font-size: 1.1rem; }
+        .comment { font-size: 0.8rem; color: #666; margin-top: 4px; }
+
+        /* Font Assignments */
+        .f-roboto { font-family: 'Roboto Mono', monospace; }
+        .f-ibm { font-family: 'IBM Plex Mono', monospace; }
+        .f-source { font-family: 'Source Code Pro', monospace; }
+        .f-jetbrains { font-family: 'JetBrains Mono', monospace; }
+        .f-fira { font-family: 'Fira Code', monospace; }
+        .f-inconsolata { font-family: 'Inconsolata', monospace; }
+        .f-space { font-family: 'Space Mono', monospace; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Numeric Font Comparison</h1>
+    <p>All fonts below are <strong>Monospaced</strong>. This ensures that a "1" takes up the same width as a "8", and Bold characters take up the same width as Normal characters—essential for decimal alignment.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Font Name & Support</th>
+                <th>Scientific (Value + Unit)</th>
+                <th>Financial (Currency)</th>
+                <th>Performance (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <script>
+                const fonts = [
+                    { name: "Roboto Mono", class: "f-roboto", comment: "Modern, clean, and highly legible even at small sizes. Raw Support: Yes." },
+                    { name: "IBM Plex Mono", class: "f-ibm", comment: "Engineered for technical data with distinct glyphs (slashed zero). Raw Support: Yes." },
+                    { name: "Source Code Pro", class: "f-source", comment: "Adobe's contribution; slightly wider for better horizontal scanning. Raw Support: Yes." },
+                    { name: "JetBrains Mono", class: "f-jetbrains", comment: "Optimized for reading long rows of data without eye strain. Raw Support: Yes." },
+                    { name: "Fira Code", class: "f-fira", comment: "Clean, geometric proportions that hold up well in dense tables. Raw Support: Yes." },
+                    { name: "Inconsolata", class: "f-inconsolata", comment: "A classic humanist mono, looks more professional, less 'techy'. Raw Support: Yes." },
+                    { name: "Space Mono", class: "f-space", comment: "Eclectic and geometric; excellent for high-impact dashboards. Raw Support: Yes." }
+                ];
+
+                const units = ["Kg", "m", "gr", "L", "Hz", "Pa", "mol"];
+
+                fonts.forEach((f, index) => {
+                    document.write(`
+                        <tr class="${f.class}">
+                            <td class="font-info">
+                                <span class="font-name">${f.name}</span>
+                                <div class="comment">${f.comment}</div>
+                            </td>
+                            <td class="num-cell">
+                                <div class="normal">1,234.56 ${units[index]}</div>
+                                <div class="normal">  845.20 ${units[index]}</div>
+                                <div class="bold">2,079.76 ${units[index]}</div>
+                            </td>
+                            <td class="num-cell">
+                                <div class="normal">$1,234.56</div>
+                                <div class="normal">$10,845.20</div>
+                                <div class="bold">$12,079.76</div>
+                            </td>
+                            <td class="num-cell">
+                                <div class="normal">12.50%</div>
+                                <div class="normal"> 4.15%</div>
+                                <div class="bold">16.65%</div>
+                            </td>
+                        </tr>
+                    `);
+                });
+            </script>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
