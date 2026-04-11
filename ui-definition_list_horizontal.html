@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Definition list</title>
+<style>
+    body {
+        margin: 0;
+        padding: 1rem;
+        background: smokewhite;
+    }
+</style>
+</head>
+<body>
+<h1 style="margin-bottom:0;padding-bottom:0;line-height0.9em;">HTML Pattern: Horizontal Definition List.</h1><p style="margin-top:0;padding-top:0;"><i>Adjusts dd width to container's width (dd, dt, dl)</i></p>
+
+<style id="ui_definition_list_css">
+    .ui-dl {
+        display: grid;
+        /* Col 1: Min content size, up to 30% max. Col 2: Rest of space */
+        grid-template-columns: fit-content(30%) 1fr;
+        gap: 0.5rem 1rem;
+        align-items: baseline;
+        margin: 1rem 0;
+    }
+
+    .ui-dl dt {
+        grid-column: 1;
+        font-weight: bold;
+        color: #444;
+        /* Ensure very long words in labels don't break the layout */
+        overflow-wrap: anywhere; 
+    }
+
+    .ui-dl dd {
+        grid-column: 2;
+        margin: 0;
+        text-align: left; /* As requested */
+        
+        /* Never lose content */
+        overflow-wrap: anywhere;
+        word-break: break-word;
+        min-width: 0; 
+    }
+    
+    /* Optional: visual separator for ease of use */
+    .ui-dl dt {
+        border-bottom: 1px solid #f0f0f0;
+    }
+</style>
+
+<dl class="ui-dl">
+    <dt>User</dt>
+    <dd>John Doe</dd>
+    
+    <dt>IdentificationNumber</dt>
+    <dd>ID-9920348502394850239485</dd>
+
+    <dt>Bio</dt>
+    <dd>This is a left-aligned description that will take up all the remaining horizontal space in the row. If the text is long enough, it will wrap perfectly to the next line without hiding any characters.</dd>
+</dl>
+<hr>
+	<fieldset style="width:fit-content;margin:1em;"><legend>Staggered Row flexbox CSS</legend><pre style="border:outset 3px white;background-color:white;color:darkblue;margin:0.3em;padding:0.1em;text-align:left;" id="show_css"></pre></fieldset>
+	<script>
+		document.getElementById("show_css").textContent = document.getElementById("ui_definition_list_css").textContent;
+	</script>
+</body>
+</html>

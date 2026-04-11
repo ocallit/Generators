@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Staggered Row: Flexbox</title>
+<style>
+    body {
+        margin: 0;
+        padding: 1rem;
+        background: smokewhite;
+    }
+</style>
+</head>
+<body>
+<h1 style="margin-bottom:0;padding-bottom:0;line-height0.9em;">HTML Pattern: Staggered Row: flexbox.</h1><p style="margin-top:0;padding-top:0;"><i>different widths</i></p>
+	<style id="staggered_row_css_flexbox">
+		.staggered-row {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: flex-start;
+			gap: 0.2rem;
+		}
+
+		.staggered-row > div {
+			flex: 0 1 auto;      /* do not stretch, allow shrink */
+			width: fit-content;  /* width based on content */
+			max-width: 100%;     /* never wider than parent row */
+			min-width: 0;        /* allow shrinking inside flex */
+			padding: 0.5rem 0.5rem;
+			border: 1px solid #bbb;
+			background: white;
+			border-radius: 0.5rem;
+
+			overflow-wrap: anywhere; /* long words do not overflow */
+			word-break: break-word;
+		}
+	</style>
+
+	<div class="staggered-row">
+		<div>Short</div>
+		<div>A bit wider content</div>
+		<div>This one is much wider because it has more text inside it</div>
+		<div>Small</div>
+		<div>Another card with different width</div>
+		<div>Supercalifragilisticexpialidocious-long-word-example</div>
+		<div>Medium length</div>
+		<div>Very very very very very wide item with enough text to wrap when needed</div>
+	</div>
+	<hr>
+	<fieldset style="width:fit-content;margin:1em;"><legend>Staggered Row flexbox CSS</legend><pre style="border:outset 3px white;background-color:white;color:darkblue;margin:0.3em;padding:0.1em;text-align:left;" id="show_css"></pre></fieldset>
+	<script>
+		document.getElementById("show_css").textContent = document.getElementById("staggered_row_css_flexbox").textContent;
+	</script>
+</body>
+</html>
